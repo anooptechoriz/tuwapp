@@ -29,8 +29,8 @@ class _DeleteImageState extends State<DeleteImage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              "Delete Image!",
+            Text(
+              str.di_deleteimg,
               style: TextStyle(
                   fontFamily: "Open",
                   fontWeight: FontWeight.bold,

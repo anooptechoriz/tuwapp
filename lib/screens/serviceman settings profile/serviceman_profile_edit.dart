@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -13,15 +14,18 @@ import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_services/API/endpoint.dart';
+import 'package:social_media_services/API/get_region_info.dart';
 import 'package:social_media_services/API/get_serviceManProfileDetails.dart';
 import 'package:social_media_services/API/update_ServiceMan.dart';
+import 'package:social_media_services/animations/animtions.dart';
 import 'package:social_media_services/components/assets_manager.dart';
 import 'package:social_media_services/components/color_manager.dart';
 import 'package:social_media_services/components/styles_manager.dart';
 import 'package:social_media_services/controllers/controllers.dart';
 import 'package:social_media_services/model/get_countries.dart';
+import 'package:social_media_services/model/region_info_model.dart';
+import 'package:social_media_services/model/state_info_model.dart';
 import 'package:social_media_services/providers/data_provider.dart';
-import 'package:social_media_services/responsive/responsive.dart';
 import 'package:social_media_services/responsive/responsive_width.dart';
 import 'package:social_media_services/screens/messagePage.dart';
 import 'package:social_media_services/screens/serviceHome.dart';
@@ -53,11 +57,16 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
   String lang = '';
   String? selectedValue;
   int? countryid;
+  String? regid;
+  String? stateid;
 
   final ImagePicker _picker = ImagePicker();
 
   String? selectedCountry;
   List<Countries> r = [];
+  List<Regions> reg = [];
+  String? defaultReg;
+  String? defState;
 
   bool isCountryEditEnabled = false;
   bool isStatusVisible = false;
@@ -78,16 +87,32 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
       // print(timeStamp);
       final provider = Provider.of<DataProvider>(context, listen: false);
       final userData = provider.serviceManProfile?.userData;
+      final fieldData = provider.viewProfileModel?.userdetails;
       final str = AppLocalizations.of(context)!;
       int? n = provider.countriesModel?.countries?.length;
       int i = 0;
       while (i < n!.toInt()) {
-        r3.add(provider.countriesModel!.countries![i].countryName!);
+        r3.add(provider.countriesModel!.countries![i].countryName ?? "");
         i++;
       }
+      ServiceManProfileEdit.regionController.text = userData?.city ?? "";
+      ServiceManProfileEdit.stateController.text = userData?.city ?? '';
+      log("city======================================================================${userData?.city}");
+      provider.clearRegions();
+      provider.clearStates();
       await getServiceManProfileFun(context);
       ServiceManProfileEdit.descriptionController.text = userData?.about ?? '';
       ServiceManProfileEdit.detailsController.text = userData?.profile ?? '';
+
+      selectedCountry = userData?.countryName ?? '';
+      defaultReg = userData?.city;
+      defState = userData?.statename;
+      regid = userData?.region ?? '';
+      stateid = userData?.state ?? '';
+      getRegionData(context, userData?.countryId);
+      getStateData(context, userData?.region);
+      setState(() {});
+
       items = [str.s_two, str.s_four];
       // print('object');
       // print(userData?.transport ?? 's');
@@ -104,6 +129,7 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
     final provider = Provider.of<DataProvider>(context, listen: true);
     final size = MediaQuery.of(context).size;
     final userData = provider.serviceManProfile?.userData;
+    final fieldData = provider.viewProfileModel?.userdetails;
     final str = AppLocalizations.of(context)!;
     final w = MediaQuery.of(context).size.width;
     final mobWth = ResponsiveWidth.isMobile(context);
@@ -414,7 +440,7 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
                                     padding:
                                         const EdgeInsets.fromLTRB(10, 0, 0, 0),
                                     child: Text(
-                                      '${userData?.countryName ?? ''} | ${userData?.state ?? ''}',
+                                      '${userData?.countryName ?? ''} | ${userData?.statename ?? ''}',
                                       style: getRegularStyle(
                                           color: ColorManager.engineWorkerColor,
                                           fontSize:
@@ -442,32 +468,231 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
                       isCountryEditEnabled
                           ? Padding(
                               padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                              child: Row(
+                              child: Column(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
                                 children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      boxShadow: [
-                                        BoxShadow(
-                                          blurRadius: 10.0,
-                                          color: Colors.grey.shade300,
-                                          // offset: const Offset(5, 8.5),
+                                  FadeSlideCustomAnimation(
+                                    delay: .55,
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          0, 10, 0, 0),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          boxShadow: [
+                                            BoxShadow(
+                                              blurRadius: 10.0,
+                                              color: Colors.grey.shade300,
+                                              // offset: const Offset(5, 8.5),
+                                            ),
+                                          ],
                                         ),
-                                      ],
+                                        child: Container(
+                                          width: size.width * .45,
+                                          height: 43,
+                                          decoration: BoxDecoration(
+                                              color: ColorManager.whiteColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
+                                          child: Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                0, 10, 0, 10),
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton2(
+                                                  isExpanded: true,
+                                                  // focusNode: nfocus,
+                                                  // icon: const Icon(
+                                                  //   Icons.keyboard_arrow_down,
+                                                  //   size: 35,
+                                                  //   color: ColorManager.black,
+                                                  // ),
+                                                  hint: Text(str.ae_country_h,
+                                                      style: getRegularStyle(
+                                                          color: const Color.fromARGB(
+                                                              255,
+                                                              173,
+                                                              173,
+                                                              173),
+                                                          fontSize: 15)),
+                                                  items: r3
+                                                      .map((item) =>
+                                                          DropdownMenuItem<
+                                                              String>(
+                                                            value: item,
+                                                            child: Text(item,
+                                                                style: getRegularStyle(
+                                                                    color: ColorManager
+                                                                        .black,
+                                                                    fontSize:
+                                                                        15)),
+                                                          ))
+                                                      .toList(),
+                                                  // value: selectedCountry,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      selectedCountry =
+                                                          value as String;
+                                                    });
+
+                                                    setState(() {
+                                                      defaultReg = null;
+                                                      provider.clearRegions();
+                                                      regid = null;
+                                                    });
+
+                                                    s(selectedCountry);
+
+                                                    getRegionData(
+                                                      context,
+                                                      countryid,
+                                                    );
+                                                    defState = null;
+                                                    stateid = null;
+                                                    provider.clearStates();
+                                                    setState(() {});
+                                                  },
+                                                  buttonHeight: 40,
+                                                  dropdownMaxHeight:
+                                                      size.height * .6,
+                                                  // buttonWidth: 140,
+                                                  itemHeight: 40,
+                                                  buttonPadding:
+                                                      const EdgeInsets.fromLTRB(
+                                                          12, 0, 8, 0),
+                                                  // dropdownWidth: size.width,
+                                                  itemPadding:
+                                                      const EdgeInsets.fromLTRB(
+                                                          12, 0, 12, 0),
+                                                  searchController:
+                                                      ServiceManProfileEdit
+                                                          .searchController,
+                                                  searchInnerWidget: Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                      top: 8,
+                                                      bottom: 4,
+                                                      right: 8,
+                                                      left: 8,
+                                                    ),
+                                                    child: TextFormField(
+                                                      controller:
+                                                          ServiceManProfileEdit
+                                                              .searchController,
+                                                      decoration:
+                                                          InputDecoration(
+                                                        isDense: true,
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          horizontal: 10,
+                                                          vertical: 8,
+                                                        ),
+                                                        // TODO: localisation
+                                                        hintText: str
+                                                            .s_search_country,
+                                                        hintStyle:
+                                                            const TextStyle(
+                                                                fontSize: 12),
+                                                        border:
+                                                            OutlineInputBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  customButton:
+                                                      selectedCountry == null
+                                                          ? null
+                                                          : Row(
+                                                              children: [
+                                                                Center(
+                                                                  child:
+                                                                      Padding(
+                                                                    padding:
+                                                                        const EdgeInsets.fromLTRB(
+                                                                            10,
+                                                                            0,
+                                                                            10,
+                                                                            0),
+                                                                    child: Text(
+                                                                        selectedCountry ??
+                                                                            ''),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                  searchMatchFn:
+                                                      (item, searchValue) {
+                                                    return (item.value
+                                                        .toString()
+                                                        .toLowerCase()
+                                                        .contains(searchValue));
+                                                  },
+                                                  //This to clear the search value when you close the menu
+                                                  onMenuStateChange: (isOpen) {
+                                                    if (!isOpen) {
+                                                      ServiceManProfileEdit
+                                                          .searchController
+                                                          .clear();
+                                                    }
+                                                  }),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    child: Container(
-                                      width: size.width * .45,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                          color: ColorManager.whiteColor,
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      child: Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            0, 10, 0, 10),
-                                        child: DropdownButtonHideUnderline(
-                                          child: DropdownButton2(
+                                  ),
+                                  SizedBox(
+                                    height: 8,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Container(
+                                        // height: 45,
+                                        decoration: BoxDecoration(
+                                          boxShadow: [
+                                            BoxShadow(
+                                              blurRadius: 10.0,
+                                              color: Colors.grey.shade300,
+                                              // offset: const Offset(5, 8.5),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Container(
+                                          width: size.width * .45,
+                                          decoration: BoxDecoration(
+                                            boxShadow: [
+                                              BoxShadow(
+                                                blurRadius: 10.0,
+                                                color: Colors.grey.shade300,
+                                                // offset: const Offset(5, 8.5),
+                                              ),
+                                            ],
+                                            color: ColorManager.whiteColor,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+
+                                          // child: TextField(
+                                          //   style: const TextStyle(),
+                                          //   controller: EditProfileControllers
+                                          //       .stateController,
+                                          //   decoration: InputDecoration(
+                                          //       hintText: str.p_region_h,
+                                          //       hintStyle: getRegularStyle(
+                                          //           color: const Color.fromARGB(
+                                          //               255, 173, 173, 173),
+                                          //           fontSize:
+                                          //               Responsive.isMobile(context)
+                                          //                   ? 15
+                                          //                   : 10)),
+                                          // ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton2<Regions>(
                                               isExpanded: true,
                                               // focusNode: nfocus,
                                               // icon: const Icon(
@@ -475,20 +700,29 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
                                               //   size: 35,
                                               //   color: ColorManager.black,
                                               // ),
-                                              hint: Text(str.ae_country_h,
-                                                  style: getRegularStyle(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                              255,
-                                                              173,
-                                                              173,
-                                                              173),
-                                                      fontSize: 15)),
-                                              items: r3
+                                              hint: provider.regionInfoModel
+                                                              ?.result ==
+                                                          false ||
+                                                      provider.regionInfoModel
+                                                              ?.result ==
+                                                          null
+                                                  ? Text(str.no_ava,
+                                                      style: getRegularStyle(
+                                                          color: const Color.fromARGB(
+                                                              255, 173, 173, 173),
+                                                          fontSize: 15))
+                                                  : Text(str.p_region_h,
+                                                      style: getRegularStyle(
+                                                          color: const Color.fromARGB(
+                                                              255, 173, 173, 173),
+                                                          fontSize: 15)),
+                                              items: provider
+                                                  .regionInfoModel?.regions!
                                                   .map((item) =>
-                                                      DropdownMenuItem<String>(
+                                                      DropdownMenuItem<Regions>(
                                                         value: item,
-                                                        child: Text(item,
+                                                        child: Text(
+                                                            item.cityName ?? '',
                                                             style: getRegularStyle(
                                                                 color:
                                                                     ColorManager
@@ -496,15 +730,26 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
                                                                 fontSize: 15)),
                                                       ))
                                                   .toList(),
-                                              value: selectedCountry,
-                                              onChanged: (value) {
+                                              // value: defaultReg,
+                                              onChanged: (value) async {
                                                 setState(() {
-                                                  selectedCountry =
-                                                      value as String;
+                                                  defaultReg =
+                                                      value?.cityName as String;
+                                                  regid = value?.id.toString();
                                                 });
-                                                s(selectedCountry);
+                                                ServiceManProfileEdit
+                                                    .regionController
+                                                    .text = defaultReg ?? '';
+                                                provider.clearStates();
+                                                // s(selectedValue);
+
+                                                defState = null;
+                                                stateid = null;
+                                                await getStateData(
+                                                    context, regid);
+                                                setState(() {});
                                               },
-                                              buttonHeight: 40,
+                                              buttonHeight: 50,
                                               dropdownMaxHeight:
                                                   size.height * .6,
                                               // buttonWidth: 140,
@@ -513,88 +758,291 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
                                                   const EdgeInsets.fromLTRB(
                                                       12, 0, 8, 0),
                                               // dropdownWidth: size.width,
-                                              itemPadding: const EdgeInsets
-                                                  .fromLTRB(12, 0, 12, 0),
-                                              searchController:
-                                                  ServiceManProfileEdit
-                                                      .searchController,
-                                              searchInnerWidget: Padding(
-                                                padding: const EdgeInsets.only(
-                                                  top: 8,
-                                                  bottom: 4,
-                                                  right: 8,
-                                                  left: 8,
-                                                ),
-                                                child: TextFormField(
-                                                  controller:
-                                                      ServiceManProfileEdit
-                                                          .searchController,
-                                                  decoration: InputDecoration(
-                                                    isDense: true,
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 8,
+                                              itemPadding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      12, 0, 12, 0),
+                                              // searchController:
+                                              //     AddressEditControllers
+                                              //         .searchController,
+                                              // searchInnerWidget: Padding(
+                                              //   padding:
+                                              //       const EdgeInsets.only(
+                                              //     top: 8,
+                                              //     bottom: 4,
+                                              //     right: 8,
+                                              //     left: 8,
+                                              //   ),
+                                              //   child: TextFormField(
+                                              //     controller:
+                                              //         AddressEditControllers
+                                              //             .searchController,
+                                              //     decoration: InputDecoration(
+                                              //       isDense: true,
+                                              //       contentPadding:
+                                              //           const EdgeInsets
+                                              //               .symmetric(
+                                              //         horizontal: 10,
+                                              //         vertical: 8,
+                                              //       ),
+                                              //       // TODO: localisation
+                                              //       hintText:
+                                              //           str.s_search_country,
+                                              //       hintStyle:
+                                              //           const TextStyle(
+                                              //               fontSize: 12),
+                                              //       border:
+                                              //           OutlineInputBorder(
+                                              //         borderRadius:
+                                              //             BorderRadius
+                                              //                 .circular(8),
+                                              //       ),
+                                              //     ),
+                                              //   ),
+                                              // ),
+                                              // searchMatchFn:
+                                              //     (item, searchValue) {
+                                              //   return (item.value
+                                              //       .toString()
+                                              //       .toLowerCase()
+                                              //       .contains(searchValue));
+                                              // },
+                                              customButton: defaultReg == null
+                                                  ? null
+                                                  : Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .fromLTRB(
+                                                                  10,
+                                                                  15,
+                                                                  10,
+                                                                  15),
+                                                          child: Text(
+                                                              defaultReg ?? '',
+                                                              style: getRegularStyle(
+                                                                  color:
+                                                                      ColorManager
+                                                                          .black,
+                                                                  fontSize:
+                                                                      12)),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    // TODO: localisation
-                                                    hintText:
-                                                        str.s_search_country,
-                                                    hintStyle: const TextStyle(
-                                                        fontSize: 12),
-                                                    border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              searchMatchFn:
-                                                  (item, searchValue) {
-                                                return (item.value
-                                                    .toString()
-                                                    .toLowerCase()
-                                                    .contains(searchValue));
-                                              },
                                               //This to clear the search value when you close the menu
-                                              onMenuStateChange: (isOpen) {
-                                                if (!isOpen) {
-                                                  ServiceManProfileEdit
-                                                      .searchController
-                                                      .clear();
-                                                }
-                                              }),
+                                              // onMenuStateChange: (isOpen) {
+                                              //   if (!isOpen) {
+                                              //     AddressEditControllers
+                                              //         .searchController
+                                              //         .clear();
+                                              //   }
+                                              // }
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: size.width * .45,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      boxShadow: [
-                                        BoxShadow(
-                                          blurRadius: 10.0,
-                                          color: Colors.grey.shade300,
-                                          // offset: const Offset(5, 8.5),
+                                      Container(
+                                        width: size.width * .45,
+                                        // height: 45,
+                                        decoration: BoxDecoration(
+                                          boxShadow: [
+                                            BoxShadow(
+                                              blurRadius: 10.0,
+                                              color: Colors.grey.shade300,
+                                              // offset: const Offset(5, 8.5),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                    child: TextField(
-                                      style: const TextStyle(),
-                                      controller:
-                                          ServiceManProfileEdit.stateController,
-                                      decoration: InputDecoration(
-                                          hintText: str.e_state_h,
-                                          hintStyle: getRegularStyle(
-                                              color: const Color.fromARGB(
-                                                  255, 173, 173, 173),
-                                              fontSize:
-                                                  Responsive.isMobile(context)
-                                                      ? 15
-                                                      : 10)),
-                                    ),
+                                        child: Container(
+                                          width: size.width * .44,
+                                          // height: mob ? 50 : 35,
+                                          decoration: BoxDecoration(
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  blurRadius: 10.0,
+                                                  color: Colors.grey.shade300,
+                                                  // offset: const Offset(5, 8.5),
+                                                ),
+                                              ],
+                                              color: ColorManager.whiteColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
+                                          child:
+                                              // TextField(
+                                              //   // style: const TextStyle(),
+                                              //   controller:
+                                              //       ServiceControllers
+                                              //           .stateController,
+                                              //   decoration: InputDecoration(
+                                              //       hintText:
+                                              //           str.s_state,
+                                              //       hintStyle: getRegularStyle(
+                                              //           color: const Color
+                                              //                   .fromARGB(
+                                              //               255,
+                                              //               173,
+                                              //               173,
+                                              //               173),
+                                              //           fontSize: Responsive
+                                              //                   .isMobile(
+                                              //                       context)
+                                              //               ? 15
+                                              //               : 10)),
+                                              // ),
+                                              DropdownButtonHideUnderline(
+                                            child: DropdownButton2<States>(
+                                              isExpanded: true,
+                                              // focusNode: nfocus,
+                                              // icon: const Icon(
+                                              //   Icons.keyboard_arrow_down,
+                                              //   size: 35,
+                                              //   color: ColorManager.black,
+                                              // ),
+                                              hint: provider.stateinfomodel
+                                                              ?.result ==
+                                                          false ||
+                                                      provider.stateinfomodel
+                                                              ?.result ==
+                                                          null
+                                                  ? Text(str.no_ava,
+                                                      style: getRegularStyle(
+                                                          color: const Color.fromARGB(
+                                                              255, 173, 173, 173),
+                                                          fontSize: 15))
+                                                  : Text(str.p_state_h,
+                                                      style: getRegularStyle(
+                                                          color: const Color.fromARGB(
+                                                              255, 173, 173, 173),
+                                                          fontSize: 15)),
+                                              items: provider
+                                                  .stateinfomodel?.states!
+                                                  .map((item) =>
+                                                      DropdownMenuItem<States>(
+                                                        value: item,
+                                                        child: Text(
+                                                            item.stateName ??
+                                                                '',
+                                                            style: getRegularStyle(
+                                                                color:
+                                                                    ColorManager
+                                                                        .black,
+                                                                fontSize: 15)),
+                                                      ))
+                                                  .toList(),
+                                              // value: defRegion,
+                                              onChanged: (value) {
+                                                print(provider
+                                                    .stateinfomodel?.result);
+                                                setState(() {
+                                                  defState = value?.stateName
+                                                      as String;
+                                                  stateid =
+                                                      value?.id.toString();
+                                                });
+                                                ServiceManProfileEdit
+                                                    .stateController
+                                                    .text = defState ?? '';
+                                                // s(selectedValue);
+                                              },
+                                              buttonHeight: 50,
+                                              dropdownMaxHeight:
+                                                  size.height * .6,
+                                              // buttonWidth: 140,
+                                              itemHeight: 40,
+                                              buttonPadding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      12, 0, 8, 0),
+                                              // dropdownWidth: size.width,
+                                              itemPadding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      12, 0, 12, 0),
+                                              // searchController:
+                                              //     AddressEditControllers
+                                              //         .searchController,
+                                              // searchInnerWidget: Padding(
+                                              //   padding:
+                                              //       const EdgeInsets.only(
+                                              //     top: 8,
+                                              //     bottom: 4,
+                                              //     right: 8,
+                                              //     left: 8,
+                                              //   ),
+                                              //   child: TextFormField(
+                                              //     controller:
+                                              //         AddressEditControllers
+                                              //             .searchController,
+                                              //     decoration: InputDecoration(
+                                              //       isDense: true,
+                                              //       contentPadding:
+                                              //           const EdgeInsets
+                                              //               .symmetric(
+                                              //         horizontal: 10,
+                                              //         vertical: 8,
+                                              //       ),
+                                              //       // TODO: localisation
+                                              //       hintText:
+                                              //           str.s_search_country,
+                                              //       hintStyle:
+                                              //           const TextStyle(
+                                              //               fontSize: 12),
+                                              //       border:
+                                              //           OutlineInputBorder(
+                                              //         borderRadius:
+                                              //             BorderRadius
+                                              //                 .circular(8),
+                                              //       ),
+                                              //     ),
+                                              //   ),
+                                              // ),
+                                              // searchMatchFn:
+                                              //     (item, searchValue) {
+                                              //   return (item.value
+                                              //       .toString()
+                                              //       .toLowerCase()
+                                              //       .contains(searchValue));
+                                              // },
+                                              customButton: defState == null
+                                                  ? null
+                                                  : Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .fromLTRB(
+                                                                  10,
+                                                                  15,
+                                                                  10,
+                                                                  15),
+                                                          child: Text(
+                                                              defState ?? '',
+                                                              style: getRegularStyle(
+                                                                  color:
+                                                                      ColorManager
+                                                                          .black,
+                                                                  fontSize:
+                                                                      12)),
+                                                        ),
+                                                      ],
+                                                    ),
+                                              //This to clear the search value when you close the menu
+                                              // onMenuStateChange: (isOpen) {
+                                              //   if (!isOpen) {
+                                              //     AddressEditControllers
+                                              //         .searchController
+                                              //         .clear();
+                                              //   }
+                                              // }
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -675,52 +1123,100 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
                                 provider.serviceManProfile?.galleryImages;
                             return Padding(
                               padding: const EdgeInsets.fromLTRB(3, 0, 3, 0),
-                              child: InkWell(
-                                onTap: () {
-                                  galleryImages!.isEmpty
-                                      ? showAnimatedSnackBar(
-                                          context, str.sv_no_images)
-                                      : showDialog(
+                              child: Stack(
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      // galleryImages!.isEmpty
+                                      //     ? showAnimatedSnackBar(
+                                      //         context, str.sv_no_images)
+                                      //     :
+
+                                      if (galleryImages!.isEmpty) {
+                                        showAnimatedSnackBar(
+                                            context, str.sv_no_images);
+                                      } else {
+                                        int selectedIndex = index;
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                PageView.builder(
+                                                  itemCount:
+                                                      galleryImages.length ?? 0,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    return PopupImage(
+                                                        image:
+                                                            galleryImages[index]
+                                                                .galleryImage);
+                                                  },
+                                                  controller: PageController(
+                                                      initialPage:
+                                                          selectedIndex),
+                                                ),
+                                            barrierDismissible: true);
+                                      }
+                                      ;
+                                    },
+                                    onLongPress: () {
+                                      final imageId = galleryImages?[index].id;
+                                      showDialog(
                                           context: context,
-                                          builder: (context) => PopupImage(
-                                              image: galleryImages[index]
-                                                  .galleryImage),
-                                          barrierDismissible: true);
-                                },
-                                onLongPress: () {
-                                  final imageId = galleryImages?[index].id;
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) => DeleteImage(
-                                          imageId: imageId.toString()),
-                                      barrierDismissible: false);
-                                },
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: Container(
-                                    height: 80,
-                                    width: size.width * .28,
-                                    color: ColorManager.grayLight,
-                                    child: galleryImages!.isEmpty
-                                        ? Image.asset(
-                                            'assets/no_image.png',
-                                            fit: BoxFit.cover,
-                                          )
-                                        : CachedNetworkImage(
-                                            errorWidget: (context, url, error) {
-                                              return Container(
-                                                height: 80,
-                                                width: size.width * .28,
-                                                color: ColorManager.grayLight,
-                                              );
-                                            },
-                                            imageUrl:
-                                                "$endPoint${galleryImages[index].galleryImage ?? ''}",
-                                            fit: BoxFit.cover,
-                                            // cacheManager: customCacheManager,
-                                          ),
+                                          builder: (context) => DeleteImage(
+                                              imageId: imageId.toString()),
+                                          barrierDismissible: false);
+                                    },
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Container(
+                                        height: 80,
+                                        width: size.width * .28,
+                                        color: ColorManager.grayLight,
+                                        child: galleryImages!.isEmpty
+                                            ? Image.asset(
+                                                'assets/no_image.png',
+                                                fit: BoxFit.cover,
+                                              )
+                                            : CachedNetworkImage(
+                                                errorWidget:
+                                                    (context, url, error) {
+                                                  return Container(
+                                                    height: 80,
+                                                    width: size.width * .28,
+                                                    color:
+                                                        ColorManager.grayLight,
+                                                  );
+                                                },
+                                                imageUrl:
+                                                    "$endPoint${galleryImages[index].galleryImage ?? ''}",
+                                                fit: BoxFit.cover,
+                                                // cacheManager: customCacheManager,
+                                              ),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  Positioned(
+                                      top: 5,
+                                      right: 5,
+                                      child: InkWell(
+                                        onTap: () {
+                                          final imageId =
+                                              galleryImages[index].id;
+                                          showDialog(
+                                              context: context,
+                                              builder: (context) => DeleteImage(
+                                                  imageId: imageId.toString()),
+                                              barrierDismissible: false);
+                                        },
+                                        child: Card(
+                                          child: Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                            //size: 20,
+                                          ),
+                                        ),
+                                      ))
+                                ],
                               ),
                             );
                           },
@@ -988,9 +1484,10 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
     final provider = Provider.of<DataProvider>(context, listen: false);
     final str = AppLocalizations.of(context)!;
     final userData = provider.serviceManProfile?.userData;
-    final state = ServiceManProfileEdit.stateController.text.isEmpty
-        ? userData?.state ?? ''
-        : ServiceManProfileEdit.stateController.text;
+    final fieldData = provider.viewProfileModel?.userdetails;
+    final state = stateid;
+    final region = regid;
+
     final about = ServiceManProfileEdit.descriptionController.text.isEmpty
         ? userData?.about ?? ''
         : ServiceManProfileEdit.descriptionController.text;
@@ -1007,8 +1504,8 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
       }
     }
 
-    updateServiceManApiFun(context, state, countryId.toString(), about, profile,
-        transport, checkBoxValue);
+    updateServiceManApiFun(context, state.toString(), region.toString(),
+        countryId.toString(), about, profile, transport, checkBoxValue);
   }
 
   s(filter) {
@@ -1035,6 +1532,28 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
     });
   }
 
+  // R(filter) {
+  //   setState(() {
+  //     reg = [];
+  //   });
+
+  //   final provider = Provider.of<DataProvider>(context, listen: false);
+  //   provider.regionInfoModel?.regions?.forEach((element) {
+  //     final m = element.cityName?.contains(filter);
+
+  //     if (m == true) {
+  //       if (defaultReg != element.cityName) {
+  //         return;
+  //       }
+  //       setState(() {
+  //         reg.add(element);
+  //       });
+  //       regid = reg[0].id;
+  //       provider.selectedRegid = reg[0].id;
+  //     }
+  //   });
+  // }
+
   selectImage() async {
     final List<XFile>? images = await _picker.pickMultiImage();
     if (images == null) {
@@ -1047,17 +1566,19 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
   upload(List<XFile> imageFile) async {
     final provider = Provider.of<DataProvider>(context, listen: false);
     final userData = provider.serviceManProfile?.userData;
+    final fieldData = provider.viewProfileModel?.userdetails;
+
     final str = AppLocalizations.of(context)!;
-    final state = ServiceManProfileEdit.stateController.text.isEmpty
-        ? userData?.state ?? ''
-        : ServiceManProfileEdit.stateController.text;
+    final state = stateid ?? userData?.state ?? '';
+    final region = regid ?? userData?.region ?? '';
+
     final about = ServiceManProfileEdit.descriptionController.text.isEmpty
         ? userData?.about ?? ''
         : ServiceManProfileEdit.descriptionController.text;
     final profile = ServiceManProfileEdit.detailsController.text.isEmpty
         ? userData?.profile ?? ''
         : ServiceManProfileEdit.detailsController.text;
-    final cntryId = countryid ?? userData?.countryId.toString();
+    final cntryId = countryid ?? fieldData?.countryId.toString();
 
     String transport = '';
     if (selectedValue != null) {
@@ -1070,7 +1591,7 @@ class _ServiceManProfileEditPageState extends State<ServiceManProfileEditPage> {
 
     final length = imageFile.length;
     var uri = Uri.parse(
-        '$updateServiceManApi?state=$state&country_id=${cntryId.toString()}&profile=$profile&about=$about&transport=$transport&online_status=$checkBoxValue');
+        '$updateServiceManApi?state=${state.toString()}&region=${region.toString()}&country_id=${cntryId.toString()}&profile=$profile&about=$about&transport=$transport&online_status=$checkBoxValue');
     var request = http.MultipartRequest(
       "POST",
       uri,

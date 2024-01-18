@@ -13,7 +13,8 @@ import 'package:social_media_services/responsive/responsive.dart';
 
 class ServicerListTile extends StatefulWidget {
   Serviceman? serviceman;
-  ServicerListTile({super.key, required this.serviceman});
+  var index;
+  ServicerListTile({super.key, required this.serviceman, this.index});
 
   @override
   State<ServicerListTile> createState() => _ServicerListTileState();
@@ -22,6 +23,7 @@ class ServicerListTile extends StatefulWidget {
 class _ServicerListTileState extends State<ServicerListTile> {
   bool isFavorite = false;
   String? apiToken;
+
   @override
   void initState() {
     super.initState();
@@ -30,15 +32,19 @@ class _ServicerListTileState extends State<ServicerListTile> {
     // });
     apiToken = Hive.box("token").get('api_token');
 
-    isFavorite = widget.serviceman?.featured == 1 ? true : false;
+    isFavorite =
+        widget.serviceman?.data![widget.index].featured == 1 ? true : false;
   }
 
   @override
   Widget build(BuildContext context) {
-    final s = widget.serviceman?.distance.toString().split('.');
+    final s =
+        widget.serviceman?.data?[widget.index].distance.toString().split('.');
     final size = MediaQuery.of(context).size;
     bool mob = Responsive.isMobile(context);
     final provider = Provider.of<DataProvider>(context, listen: false);
+    // final userData = provider.serviceManDetails?.userData;
+    // print("citystate=======${widget.serviceman?.state}");
 
     return Container(
       decoration: BoxDecoration(
@@ -77,11 +83,13 @@ class _ServicerListTileState extends State<ServicerListTile> {
                       child: CircleAvatar(
                         radius: mob ? 40 : 20,
                         // backgroundColor: ColorManager.grayDark,
-                        backgroundImage: widget.serviceman?.profilePic == null
+                        backgroundImage: widget.serviceman?.data?[widget.index]
+                                    .profilePic ==
+                                null
                             ? const AssetImage('assets/user.png')
                                 as ImageProvider
                             : CachedNetworkImageProvider(
-                                '$endPoint${widget.serviceman?.profilePic}'),
+                                '$endPoint${widget.serviceman?.data?[widget.index].profilePic}'),
                       ),
                     ),
                   ),
@@ -91,9 +99,12 @@ class _ServicerListTileState extends State<ServicerListTile> {
                   left: size.width * .06,
                   child: CircleAvatar(
                     radius: mob ? 8 : 6,
-                    backgroundColor: widget.serviceman?.onlineStatus == 'online'
+                    backgroundColor: widget
+                                .serviceman?.data?[widget.index].onlineStatus ==
+                            'online'
                         ? ColorManager.primary
-                        : widget.serviceman?.onlineStatus == 'offline'
+                        : widget.serviceman?.data?[widget.index].onlineStatus ==
+                                'offline'
                             ? ColorManager.grayLight
                             : ColorManager.errorRed,
                   ),
@@ -110,19 +121,55 @@ class _ServicerListTileState extends State<ServicerListTile> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                      '${widget.serviceman?.firstname ?? ''} ${widget.serviceman?.lastname ?? ''}',
+                      '${widget.serviceman?.data?[widget.index].firstname ?? ''} ${widget.serviceman?.data?[widget.index].lastname ?? ''}',
                       style: getRegularStyle(
                           color: ColorManager.black, fontSize: mob ? 16 : 10)),
                   const SizedBox(
                     height: 4,
                   ),
-                  Text(widget.serviceman?.countryname ?? '',
+                  Text(widget.serviceman?.data?[widget.index].countryName ?? '',
                       style: getRegularStyle(
                           color: const Color.fromARGB(255, 173, 173, 173),
                           fontSize: mob ? 12 : 8)),
                   const SizedBox(
                     height: 4,
                   ),
+                  Row(
+                    children: [
+                      Text(
+                          widget.serviceman?.data?[widget.index].stateName ??
+                              '',
+                          style: getRegularStyle(
+                              color: const Color.fromARGB(255, 173, 173, 173),
+                              fontSize: mob ? 12 : 8)),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text("|",
+                          style: getRegularStyle(
+                              color: const Color.fromARGB(255, 173, 173, 173),
+                              fontSize: mob ? 12 : 8)),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                          widget.serviceman?.data?[widget.index].cityName ?? '',
+                          style: getRegularStyle(
+                              color: const Color.fromARGB(255, 173, 173, 173),
+                              fontSize: mob ? 12 : 8)),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  Text(widget.serviceman?.data?[widget.index].about ?? '',
+                      style: getRegularStyle(
+                          color: const Color.fromARGB(255, 173, 173, 173),
+                          fontSize: mob ? 12 : 8)),
+                  const SizedBox(
+                    height: 4,
+                  ),
+
                   // Text(widget.serviceman?.phone ?? '',
                   //     style: getRegularStyle(
                   //         color: const Color.fromARGB(255, 173, 173, 173),
@@ -134,7 +181,7 @@ class _ServicerListTileState extends State<ServicerListTile> {
               ),
             ),
             const Spacer(),
-            widget.serviceman?.distance == null
+            widget.serviceman?.data?[widget.index].distance == null
                 ? Container()
                 : Padding(
                     padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
@@ -146,10 +193,10 @@ class _ServicerListTileState extends State<ServicerListTile> {
                             isFavorite = !isFavorite;
                           });
                           isFavorite
-                              ? addFavoritesListFun(
-                                  context, widget.serviceman?.id)
-                              : removeFavoritesListFun(
-                                  context, widget.serviceman?.id);
+                              ? addFavoritesListFun(context,
+                                  widget.serviceman?.data?[widget.index].id)
+                              : removeFavoritesListFun(context,
+                                  widget.serviceman?.data?[widget.index].id);
                         },
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

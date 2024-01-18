@@ -13,6 +13,7 @@ import 'package:social_media_services/components/assets_manager.dart';
 import 'package:social_media_services/components/color_manager.dart';
 import 'package:social_media_services/components/styles_manager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:social_media_services/model/other%20User/show_user_address.dart';
 import 'package:social_media_services/model/serviceManLIst.dart';
 import 'package:social_media_services/providers/data_provider.dart';
 import 'package:social_media_services/responsive/responsive.dart';
@@ -23,13 +24,15 @@ import 'package:social_media_services/utils/animatedSnackBar.dart';
 import 'package:social_media_services/utils/delete_image.dart';
 import 'package:social_media_services/widgets/backbutton.dart';
 import 'package:social_media_services/widgets/custom_drawer.dart';
-import 'package:social_media_services/widgets/popup_image.dart';
 import 'package:social_media_services/widgets/profile_image.dart';
 import 'package:social_media_services/widgets/top_logo.dart';
 
+import '../../widgets/popup_image.dart';
+
 class ServiceManProfileViewPage extends StatefulWidget {
   Serviceman? serviceman;
-  ServiceManProfileViewPage({super.key, this.serviceman});
+  UserAddress? userAddress;
+  ServiceManProfileViewPage({super.key, this.serviceman, this.userAddress});
 
   @override
   State<ServiceManProfileViewPage> createState() =>
@@ -54,9 +57,13 @@ class _ServiceManProfileViewPageState extends State<ServiceManProfileViewPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("ssssss");
     final provider = Provider.of<DataProvider>(context, listen: true);
     final mob = Responsive.isMobile(context);
     final userData = provider.serviceManProfile?.userData;
+    final fieldData = provider.viewProfileModel?.userdetails;
+    String statename = fieldData?.statename?.toString() ?? "";
+
     final size = MediaQuery.of(context).size;
     final str = AppLocalizations.of(context)!;
     final w = MediaQuery.of(context).size.width;
@@ -256,11 +263,21 @@ class _ServiceManProfileViewPageState extends State<ServiceManProfileViewPage> {
                     // ),
                     FadeSlideCustomAnimation(
                       delay: .15,
-                      child: Text(
-                          '${userData?.countryName ?? ''} | ${userData?.state ?? ''}',
-                          style: getRegularStyle(
-                              color: ColorManager.engineWorkerColor,
-                              fontSize: 15)),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('${userData?.countryName ?? ''} |',
+                                style: getRegularStyle(
+                                    color: ColorManager.engineWorkerColor,
+                                    fontSize: 15)),
+                            Text('${userData?.statename ?? ''} ',
+                                style: getRegularStyle(
+                                    color: ColorManager.engineWorkerColor,
+                                    fontSize: 15)),
+                          ],
+                        ),
+                      ),
                     ),
                     FadeSlideCustomAnimation(
                       delay: .2,
@@ -308,60 +325,107 @@ class _ServiceManProfileViewPageState extends State<ServiceManProfileViewPage> {
                           itemBuilder: (context, index) {
                             final galleryImages =
                                 provider.serviceManProfile?.galleryImages;
-                            return InkWell(
-                              onTap: () {
-                                (galleryImages?.isEmpty ?? true)
-                                    ? showAnimatedSnackBar(
-                                        context, str.sv_no_images)
-                                    : showDialog(
-                                        context: context,
-                                        builder: (context) => PopupImage(
-                                            image: galleryImages?[index]
-                                                .galleryImage),
-                                        barrierDismissible: true);
-                              },
-                              onLongPress: () {
-                                final imageId = galleryImages?[index].id;
-                                (galleryImages?.isEmpty ?? true)
-                                    ? showAnimatedSnackBar(
-                                        context, str.sv_no_images)
-                                    : showDialog(
-                                        context: context,
-                                        builder: (context) => DeleteImage(
-                                            imageId: imageId.toString()),
-                                        barrierDismissible: false);
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(3, 0, 3, 0),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: Container(
-                                    decoration: const BoxDecoration(
-                                      color: ColorManager.grayLight,
+                            return Stack(
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    // (galleryImages?.isEmpty ?? true)
+                                    //     ? showAnimatedSnackBar(
+                                    //         context, str.sv_no_images)
+                                    //     :showDialog()
+
+                                    if (galleryImages?.isEmpty ?? true) {
+                                      showAnimatedSnackBar(
+                                          context, str.sv_no_images);
+                                    } else {
+                                      int selectedIndex = index;
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) =>
+                                              PageView.builder(
+                                                itemCount:
+                                                    galleryImages?.length ?? 0,
+                                                itemBuilder: (context, index) {
+                                                  return PopupImage(
+                                                    image: galleryImages?[index]
+                                                        .galleryImage,
+                                                  );
+                                                },
+                                                controller: PageController(
+                                                    initialPage: selectedIndex),
+                                              ),
+                                          barrierDismissible: true);
+                                    }
+                                    ;
+                                  },
+                                  onLongPress: () {
+                                    final imageId = galleryImages?[index].id;
+                                    (galleryImages?.isEmpty ?? true)
+                                        ? showAnimatedSnackBar(
+                                            context, str.sv_no_images)
+                                        : showDialog(
+                                            context: context,
+                                            builder: (context) => DeleteImage(
+                                                imageId: imageId.toString()),
+                                            barrierDismissible: false);
+                                  },
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(3, 0, 3, 0),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                          color: ColorManager.grayLight,
+                                        ),
+                                        height: 80,
+                                        width: size.width * .3,
+                                        child: (galleryImages?.isEmpty ?? true)
+                                            ? Image.asset(
+                                                'assets/no_image.png',
+                                                fit: BoxFit.cover,
+                                              )
+                                            : CachedNetworkImage(
+                                                errorWidget:
+                                                    (context, url, error) {
+                                                  return Container(
+                                                    height: 80,
+                                                    width: size.width * .3,
+                                                    color:
+                                                        ColorManager.grayLight,
+                                                  );
+                                                },
+                                                imageUrl:
+                                                    "$endPoint${galleryImages?[index].galleryImage ?? ''}",
+                                                fit: BoxFit.fitWidth,
+                                                // cacheManager: customCacheManager,
+                                              ),
+                                      ),
                                     ),
-                                    height: 80,
-                                    width: size.width * .3,
-                                    child: (galleryImages?.isEmpty ?? true)
-                                        ? Image.asset(
-                                            'assets/no_image.png',
-                                            fit: BoxFit.cover,
-                                          )
-                                        : CachedNetworkImage(
-                                            errorWidget: (context, url, error) {
-                                              return Container(
-                                                height: 80,
-                                                width: size.width * .3,
-                                                color: ColorManager.grayLight,
-                                              );
-                                            },
-                                            imageUrl:
-                                                "$endPoint${galleryImages?[index].galleryImage ?? ''}",
-                                            fit: BoxFit.cover,
-                                            // cacheManager: customCacheManager,
-                                          ),
                                   ),
                                 ),
-                              ),
+                                Positioned(
+                                    top: 5,
+                                    right: 5,
+                                    child: InkWell(
+                                      onTap: () {
+                                        final imageId =
+                                            galleryImages?[index].id;
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) => DeleteImage(
+                                                imageId: imageId.toString()),
+                                            barrierDismissible: false);
+                                      },
+                                      child: Card(
+                                        child: Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                          //size: 20,
+                                        ),
+                                      ),
+                                    ))
+                              ],
                             );
                           },
                         ),

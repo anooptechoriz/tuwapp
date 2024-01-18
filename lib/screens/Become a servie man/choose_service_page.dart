@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:animated_snack_bar/animated_snack_bar.dart';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -352,7 +354,8 @@ class _ChooseServicePageState extends State<ChooseServicePage> {
                                                       size: 35,
                                                       color: ColorManager.black,
                                                     ),
-                                                    hint: Text('Enter List',
+                                                    hint: Text(
+                                                        str.c_service_list_h1,
                                                         style: getRegularStyle(
                                                             color: const Color
                                                                     .fromARGB(
@@ -446,7 +449,7 @@ class _ChooseServicePageState extends State<ChooseServicePage> {
                                               TitleWidget(
                                                   name: provider
                                                           .customerChildSer
-                                                          ?.documents![0]
+                                                          ?.documents?[0]
                                                           .document ??
                                                       ''),
                                               const Icon(
@@ -657,7 +660,9 @@ class _ChooseServicePageState extends State<ChooseServicePage> {
 // TODO Localistion add
   continueToPay() {
     final provider = Provider.of<DataProvider>(context, listen: false);
+
     final str = AppLocalizations.of(context)!;
+    log("===========================$fileName");
     if (!isTickSelected) {
       AnimatedSnackBar.material(str.c_snack,
               type: AnimatedSnackBarType.warning,
@@ -668,9 +673,14 @@ class _ChooseServicePageState extends State<ChooseServicePage> {
       );
     } else if (selectedValue == null) {
       showAnimatedSnackBar(context, str.snack_choose_group);
-    } else if (provider.customerChildSer!.documents!.isNotEmpty &&
+    } else if (provider.customerChildSer?.documents?.isNotEmpty == true &&
+        fileName == null) {
+      showAnimatedSnackBar(context, str.snack_upload_file);
+    } else if (provider.customerChildSer?.childservices?.isNotEmpty == true &&
         fileName == null) {
       showAnimatedSnackBar(context, str.snack_upload);
+    } else if (provider.customerChildSer?.packages?.isEmpty == true) {
+      showAnimatedSnackBar(context, str.snack_package);
     } else {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
         return const PaymentServicePage();

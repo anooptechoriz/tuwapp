@@ -217,14 +217,14 @@ class _ServiceManDetailsState extends State<ServiceManDetails> {
                             children: [
                               InkWell(
                                 onTap: () {
-                                  userData!.profileImage!.isEmpty
+                                  userData?.profileImage?.isEmpty == true
                                       ? showAnimatedSnackBar(
                                           context, str.sv_no_images)
                                       : showDialog(
                                           context: context,
                                           builder: (context) => PopupImage(
                                               image:
-                                                  '/${userData.profileImage}'),
+                                                  '/${userData?.profileImage}'),
                                           barrierDismissible: true);
                                 },
                                 child: CircleAvatar(
@@ -270,7 +270,7 @@ class _ServiceManDetailsState extends State<ServiceManDetails> {
                       ),
                     ),
                     Text(
-                        '${userData?.countryName ?? ''} | ${userData?.state ?? ''}',
+                        '${userData?.countryName ?? ''} | ${userData?.statename ?? ''}',
                         style: getRegularStyle(
                             color: ColorManager.engineWorkerColor,
                             fontSize: 15)),
@@ -307,8 +307,9 @@ class _ServiceManDetailsState extends State<ServiceManDetails> {
                     SizedBox(
                       height: 80,
                       child: ListView.builder(
-                        itemCount: provider
-                                .serviceManDetails!.galleryImages!.isEmpty
+                        itemCount: provider.serviceManDetails?.galleryImages
+                                    ?.isEmpty ==
+                                true
                             ? 4
                             : provider.serviceManDetails?.galleryImages?.length,
                         scrollDirection: Axis.horizontal,
@@ -330,7 +331,9 @@ class _ServiceManDetailsState extends State<ServiceManDetails> {
                                         }
 
                                         return ScrollableDialogBox(
-                                            images: images);
+                                          images: images,
+                                          index: index,
+                                        );
                                       },
                                       barrierDismissible: true);
                             },
@@ -493,14 +496,15 @@ class _ServiceManDetailsState extends State<ServiceManDetails> {
                                   },
                                   style: ElevatedButton.styleFrom(
                                       padding: EdgeInsets.fromLTRB(
-                                          size.width * .1,
+                                          size.width * .05,
                                           0,
-                                          size.width * .1,
-                                          0)),
+                                          size.width * .05,
+                                          0),
+                                      backgroundColor: ColorManager.errorRed),
                                   child: Text(
                                     str.wd_report,
                                     style: getMediumtStyle(
-                                        color: ColorManager.whiteText,
+                                        color: ColorManager.whiteColor,
                                         fontSize: 14),
                                   )),
                               const SizedBox(
@@ -510,9 +514,9 @@ class _ServiceManDetailsState extends State<ServiceManDetails> {
                                 onPressed: navToChatLoadingScreen,
                                 style: ElevatedButton.styleFrom(
                                     padding: EdgeInsets.fromLTRB(
-                                        size.width * .1,
+                                        size.width * .15,
                                         0,
-                                        size.width * .1,
+                                        size.width * .15,
                                         0)),
                                 child: SvgPicture.asset(
                                   height: 20,

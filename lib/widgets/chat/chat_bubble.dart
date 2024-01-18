@@ -5,7 +5,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:maps_launcher/maps_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_services/API/endpoint.dart';
 import 'package:social_media_services/components/color_manager.dart';
@@ -36,6 +38,7 @@ class _CustomChatBubbleState extends State<CustomChatBubble> {
   bool isPdf = false;
   bool isSendByme = false;
   bool isSeen = false;
+  String lang = '';
   String? text;
   String? audio;
   String locationMessage = '11.254251,75.8369142';
@@ -43,6 +46,9 @@ class _CustomChatBubbleState extends State<CustomChatBubble> {
   @override
   void initState() {
     super.initState();
+    lang = Hive.box('LocalLan').get(
+      'lang',
+    );
     // Timer.periodic(const Duration(seconds: 2), (timer) {
 
     if (mounted) {
@@ -82,6 +88,23 @@ class _CustomChatBubbleState extends State<CustomChatBubble> {
     //     LatLng(double.parse(latLong[0]), double.parse(latLong[1]));
   }
 
+  void openGoogleMapsUrl(double latitude, double longitude) async {
+    // Specify the Google Maps URL with the desired location
+    final url =
+        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+
+    // Check if the URL can be launched
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      print('Could not launch Google Maps');
+    }
+  }
+
+  void openGoogleMaps(double latitude, double longitude) {
+    MapsLauncher.launchCoordinates(latitude, longitude);
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -93,7 +116,9 @@ class _CustomChatBubbleState extends State<CustomChatBubble> {
     // var minute = dateTime.toLocal().minute;
     String time24 =
         widget.chatMessage?.localTime?.substring(11, 16) ?? "$hour:$minute";
- String time =   DateFormat.jm().format(DateFormat("hh:mm").parse(time24));
+    String time = lang == 'ar'
+        ? DateFormat.jm('ar').format(DateFormat("hh:mm").parse(time24))
+        : DateFormat.jm('en_US').format(DateFormat("hh:mm").parse(time24));
     // print("$hour:$minute");
     // print(time);
     final provider = Provider.of<DataProvider>(context, listen: false);
@@ -223,15 +248,25 @@ class _CustomChatBubbleState extends State<CustomChatBubble> {
                                               //         "https://www.pngall.com/wp-content/uploads/5/Google-Maps-Location-Mark.png")
                                               GoogleMap(
                                             liteModeEnabled: false,
+                                            mapType: MapType.satellite,
                                             onTap: (argyment) {
-                                              Navigator.push(context,
-                                                  MaterialPageRoute(
-                                                      builder: (ctx) {
-                                                return ShareLocation(
-                                                  currentLocator:
-                                                      currentLocator,
-                                                );
-                                              }));
+                                              openGoogleMaps(
+                                                  currentLocator.latitude,
+                                                  currentLocator.longitude);
+
+                                              // *** with url *
+                                              // openGoogleMapsUrl(
+                                              //     currentLocator.latitude,
+                                              //     currentLocator.longitude);
+                                              //previous
+                                              // Navigator.push(context,
+                                              //     MaterialPageRoute(
+                                              //         builder: (ctx) {
+                                              //   return ShareLocation(
+                                              //     currentLocator:
+                                              //         currentLocator,
+                                              //   );
+                                              // }));
                                             },
                                             // myLocationEnabled: true,
                                             zoomControlsEnabled: false,
@@ -244,7 +279,7 @@ class _CustomChatBubbleState extends State<CustomChatBubble> {
                                             initialCameraPosition:
                                                 CameraPosition(
                                               target: currentLocator,
-                                              zoom: 12.0,
+                                              zoom: 15.0,
                                             ),
                                             markers: <Marker>{
                                               Marker(
@@ -321,9 +356,15 @@ class _CustomChatBubbleState extends State<CustomChatBubble> {
                                               // ),
                                               errorWidget:
                                                   (context, url, error) {
-                                                return const Center(
-                                                  child: Text(
-                                                      "No Image to display"),
+                                                return Center(
+                                                  child: lang == 'ar'
+                                                      ? Text(
+                                                          "لا توجد صورة لعرضها")
+                                                      : lang == 'hi'
+                                                          ? Text(
+                                                              "प्रदर्शित करने के लिए कोई छवि नहीं")
+                                                          : Text(
+                                                              "No Image to display"),
                                                 );
                                               },
                                             ),

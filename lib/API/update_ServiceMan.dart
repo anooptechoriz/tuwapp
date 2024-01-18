@@ -10,13 +10,13 @@ import 'package:social_media_services/API/get_serviceManProfileDetails.dart';
 import 'package:social_media_services/providers/data_provider.dart';
 import 'package:social_media_services/screens/serviceman%20settings%20profile/serviceman_profile_view.dart';
 
-updateServiceManApiFun(BuildContext context, state, id, about, profile,
+updateServiceManApiFun(BuildContext context, state, region, id, about, profile,
     transport, checkBoxValue) async {
   final provider = Provider.of<DataProvider>(context, listen: false);
   provider.subServicesModel = null;
   final apiToken = Hive.box("token").get('api_token');
   final url =
-      '$updateServiceManApi?state=$state&country_id=$id&profile=$profile&about=$about&transport=$transport&online_status=$checkBoxValue';
+      '$updateServiceManApi?state=$state&region=$region&country_id=$id&profile=$profile&about=$about&transport=$transport&online_status=$checkBoxValue';
   if (apiToken == null) return;
   try {
     var response = await http.post(Uri.parse(url),

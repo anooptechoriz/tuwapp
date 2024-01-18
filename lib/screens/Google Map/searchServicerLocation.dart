@@ -7,6 +7,7 @@ import 'package:geocoding/geocoding.dart';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:social_media_services/API/get_active_services.dart';
 import 'package:social_media_services/components/color_manager.dart';
 import 'package:social_media_services/components/styles_manager.dart';
 import 'package:social_media_services/controllers/controllers.dart';
@@ -16,7 +17,21 @@ import 'package:social_media_services/screens/serviceman/servicer.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchServicerLocation extends StatefulWidget {
-  const SearchServicerLocation({Key? key}) : super(key: key);
+  String? defRegion;
+  String? defstate;
+  int? countryid;
+  String? selectedvalue;
+  int? regid;
+  int? stateid;
+  TextEditingController? servicer;
+  SearchServicerLocation(
+      {this.defRegion,
+      this.defstate,
+      this.countryid,
+      this.selectedvalue,
+      this.servicer,
+      this.regid,
+      this.stateid});
 
   @override
   State<SearchServicerLocation> createState() => _SearchServicerLocationState();
@@ -27,12 +42,20 @@ class _SearchServicerLocationState extends State<SearchServicerLocation> {
   bool isLocationChanged = false;
   bool isLoading = false;
   String? locality;
+
   String? country;
   String? place;
   LatLng? currentLocator;
   GoogleMapController? mapController;
   @override
+  void initState() {
+    getActiveServices(context);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print("wwwwwwwwwwwwwwwww=${widget.servicer}");
     final provider = Provider.of<DataProvider>(context, listen: false);
     final servicerProvider =
         Provider.of<ServicerProvider>(context, listen: false);
@@ -73,8 +96,17 @@ class _SearchServicerLocationState extends State<SearchServicerLocation> {
                       Navigator.pushReplacement(context,
                           MaterialPageRoute(builder: (ctx) {
                         return ServicerPage(
+                          isUpdate: true,
                           id: servicerProvider.serviceId,
                           isAdvancedSearchEnabled: true,
+                          defRegion: widget.defRegion,
+                          defstate: widget.defstate,
+                          countryid: widget.countryid,
+                          selectedValue: widget.selectedvalue,
+                          stateid: widget.stateid,
+                          regid: widget.regid,
+
+                          // isUpdate: true,
                         );
                       }));
                     },
@@ -87,6 +119,7 @@ class _SearchServicerLocationState extends State<SearchServicerLocation> {
           alignment: AlignmentDirectional.bottomCenter,
           children: [
             GoogleMap(
+              mapType: MapType.satellite,
               myLocationEnabled: true, buildingsEnabled: true,
               // compassEnabled: true,
 
@@ -102,7 +135,7 @@ class _SearchServicerLocationState extends State<SearchServicerLocation> {
 
               initialCameraPosition: CameraPosition(
                 target: currentLocator!,
-                zoom: 11.0,
+                zoom: 18.0,
               ),
               markers: <Marker>{
                 Marker(

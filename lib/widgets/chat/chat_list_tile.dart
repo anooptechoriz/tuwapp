@@ -138,24 +138,43 @@ class _ChatListTileState extends State<ChatListTile> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                              widget.profileData?.firstname ??
-                                  widget.profileData?.phone ??
-                                  '',
-                              style: getRegularStyle(
-                                  color: ColorManager.black,
-                                  fontSize: mob ? 16 : 10)),
-                          const SizedBox(
-                            width: 4,
-                          ),
-                          Text(widget.profileData?.lastname ?? '',
-                              style: getRegularStyle(
-                                  color: ColorManager.black,
-                                  fontSize: mob ? 16 : 10)),
-                        ],
-                      ),
+                      lang == 'ar'
+                          ? Row(
+                              children: [
+                                Text(
+                                    widget.profileData?.lastname ??
+                                        widget.profileData?.phone ??
+                                        '',
+                                    style: getRegularStyle(
+                                        color: ColorManager.black,
+                                        fontSize: mob ? 16 : 10)),
+                                const SizedBox(
+                                  width: 4,
+                                ),
+                                Text(widget.profileData?.firstname ?? '',
+                                    style: getRegularStyle(
+                                        color: ColorManager.black,
+                                        fontSize: mob ? 16 : 10)),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                Text(
+                                    widget.profileData?.firstname ??
+                                        widget.profileData?.phone ??
+                                        '',
+                                    style: getRegularStyle(
+                                        color: ColorManager.black,
+                                        fontSize: mob ? 16 : 10)),
+                                const SizedBox(
+                                  width: 4,
+                                ),
+                                Text(widget.profileData?.lastname ?? '',
+                                    style: getRegularStyle(
+                                        color: ColorManager.black,
+                                        fontSize: mob ? 16 : 10)),
+                              ],
+                            ),
                       const SizedBox(
                         height: 4,
                       ),
@@ -188,14 +207,30 @@ class _ChatListTileState extends State<ChatListTile> {
                           ),
                           Text(
                               widget.profileData?.type == 'location'
-                                  ? "Location"
+                                  ? lang == 'ar'
+                                      ? 'موقع'
+                                      : lang == 'hi'
+                                          ? 'जगह'
+                                          : 'Location'
                                   : widget.profileData?.type == 'image'
-                                      ? "Image"
+                                      ? lang == 'ar'
+                                          ? 'صورة'
+                                          : lang == 'hi'
+                                              ? 'छवि'
+                                              : "Image"
                                       : widget.profileData?.type == 'audio'
-                                          ? "Audio"
+                                          ? lang == 'ar'
+                                              ? 'صوتي'
+                                              : lang == 'hi'
+                                                  ? 'ऑडियो'
+                                                  : "Audio"
                                           : widget.profileData?.type ==
                                                   'document'
-                                              ? "Document"
+                                              ? lang == 'ar'
+                                                  ? 'وثيقة'
+                                                  : lang == 'hi'
+                                                      ? 'दस्तावेज़'
+                                                      : "Document"
                                               : widget.profileData?.message ??
                                                   '',
                               style: getRegularStyle(

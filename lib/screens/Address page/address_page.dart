@@ -64,6 +64,7 @@ class _AddressPageState extends State<AddressPage> {
     lang = Hive.box('LocalLan').get(
       'lang',
     );
+
     getUserAddress(context);
   }
 

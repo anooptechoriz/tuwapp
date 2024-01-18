@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -311,26 +314,39 @@ class _ProfileImage3State extends State<ProfileImage3> {
     upload(image);
   }
 
-  upload(XFile imageFile) async {
-    var stream = http.ByteStream(DelegatingStream(imageFile.openRead()));
-    var length = await imageFile.length();
+  Future<void> upload(XFile imageFile) async {
+    // Compress the image
+    Uint8List? compressedBytesUint8List =
+        await FlutterImageCompress.compressWithFile(
+      imageFile.path,
+      quality: 85, // Adjust the quality as needed (0 to 100)
+    );
+
+    // Use the null-aware operator to handle the case when compressedBytesUint8List is null
+    List<int> compressedBytes = compressedBytesUint8List ?? [];
+
+    var stream = http.ByteStream(Stream.fromIterable([compressedBytes]));
+    var length = compressedBytes.length;
+
     final apiToken = Hive.box("token").get('api_token');
     final provider = Provider.of<DataProvider>(context, listen: false);
     var uri = Uri.parse(updateProfileApi);
-    var request = http.MultipartRequest(
-      "POST",
-      uri,
-    );
-    // "content-type": "multipart/form-data"
-    request.headers
-        .addAll({"device-id": provider.deviceId ?? '', "api-token": apiToken});
+    var request = http.MultipartRequest("POST", uri);
+
+    request.headers.addAll({
+      "device-id": provider.deviceId ?? '',
+      "api-token": apiToken,
+    });
+
     var multipartFile = http.MultipartFile(
       'profile_image',
       stream,
       length,
       filename: (imageFile.path),
     );
+
     request.files.add(multipartFile);
+
     var response = await request.send();
     print(response.statusCode);
     await viewProfile(context);

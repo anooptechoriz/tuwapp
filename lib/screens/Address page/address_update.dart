@@ -11,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:maps_launcher/maps_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_services/API/address/getUserAddress.dart';
 import 'package:social_media_services/API/endpoint.dart';
@@ -21,6 +22,7 @@ import 'package:social_media_services/components/styles_manager.dart';
 import 'package:social_media_services/controllers/controllers.dart';
 import 'package:social_media_services/model/get_countries.dart';
 import 'package:social_media_services/model/region_info_model.dart';
+import 'package:social_media_services/model/state_info_model.dart';
 import 'package:social_media_services/model/user_address_show.dart';
 import 'package:social_media_services/providers/data_provider.dart';
 import 'package:social_media_services/responsive/responsive_width.dart';
@@ -41,8 +43,18 @@ import 'package:async/async.dart';
 class UserAddressUpdate extends StatefulWidget {
   final UserAddress userAddress;
   bool isUpdate;
+  String? defaultReg;
+  String? defRegion;
+  int? regid;
+  String? stateid;
   UserAddressUpdate(
-      {super.key, required this.userAddress, this.isUpdate = false});
+      {super.key,
+      required this.userAddress,
+      this.isUpdate = false,
+      this.defRegion,
+      this.defaultReg,
+      this.regid,
+      this.stateid});
 
   @override
   State<UserAddressUpdate> createState() => _UserAddressUpdateState();
@@ -52,6 +64,7 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
   Countries? selectedValue;
   String? countryValue;
   int? defaultRegId;
+  String? stateid;
   int _selectedIndex = 2;
   final List<Widget> _screens = [const ServiceHomePage(), const MessagePage()];
   String lang = '';
@@ -61,6 +74,7 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
   bool isSaveAddressLoading = false;
   String? imagePath;
   String? defaultReg;
+  String? defRegion;
   XFile? imageFile;
   GoogleMapController? mapController;
   @override
@@ -69,10 +83,18 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
     lang = Hive.box('LocalLan').get(
       'lang',
     );
+    log("country====${widget.userAddress.country}");
+    log("country====${widget.userAddress.state}");
+    log("country====${widget.userAddress.region}");
+
     if (widget.isUpdate == false) {
       fillFields();
     } else {
       countryValue = widget.userAddress.country;
+      defaultReg = widget.defaultReg;
+      defRegion = widget.defRegion;
+      defaultRegId = widget.regid;
+      stateid = widget.stateid;
     }
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
@@ -86,6 +108,10 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
       if (widget.isUpdate == true) {
         imageFile = provider.image ?? XFile('');
         imagePath = provider.image?.path ?? '';
+        defRegion = widget.defRegion;
+        defaultReg = widget.defaultReg;
+        defaultRegId = widget.regid;
+        stateid = widget.stateid;
       } else {
         imageFile = XFile('');
         imagePath = '';
@@ -96,13 +122,24 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
         // mapController?.animateCamera(CameraUpdate.newCameraPosition(
         //     CameraPosition(target: currentLocator, zoom: 12)));
       }
+
       provider.clearRegions();
-      await getRegionData(context, widget.userAddress.countryId);
+      provider.clearStates();
+      await getRegionData(
+        context,
+        widget.userAddress.countryId,
+      );
+      await getStateData(context, widget.userAddress.regionId);
     });
+  }
+
+  void openGoogleMaps(double latitude, double longitude) {
+    MapsLauncher.launchCoordinates(latitude, longitude);
   }
 
   @override
   Widget build(BuildContext context) {
+    print("aaaaaaaaaaaaaaaaaaaah here");
     final str = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
     final provider = Provider.of<DataProvider>(context, listen: true);
@@ -222,28 +259,55 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
                         const SizedBox(
                           height: 5,
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              provider.viewProfileModel?.userdetails
-                                      ?.firstname ??
-                                  '',
-                              style: getBoldtStyle(
-                                  color: ColorManager.black, fontSize: 13),
-                            ),
-                            const SizedBox(
-                              width: 2,
-                            ),
-                            Text(
-                              provider.viewProfileModel?.userdetails
-                                      ?.lastname ??
-                                  '',
-                              style: getBoldtStyle(
-                                  color: ColorManager.black, fontSize: 13),
-                            ),
-                          ],
-                        ),
+                        lang == 'ar'
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    provider.viewProfileModel?.userdetails
+                                            ?.lastname ??
+                                        '',
+                                    style: getBoldtStyle(
+                                        color: ColorManager.black,
+                                        fontSize: 13),
+                                  ),
+                                  const SizedBox(
+                                    width: 2,
+                                  ),
+                                  Text(
+                                    provider.viewProfileModel?.userdetails
+                                            ?.firstname ??
+                                        '',
+                                    style: getBoldtStyle(
+                                        color: ColorManager.black,
+                                        fontSize: 13),
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    provider.viewProfileModel?.userdetails
+                                            ?.firstname ??
+                                        '',
+                                    style: getBoldtStyle(
+                                        color: ColorManager.black,
+                                        fontSize: 13),
+                                  ),
+                                  const SizedBox(
+                                    width: 2,
+                                  ),
+                                  Text(
+                                    provider.viewProfileModel?.userdetails
+                                            ?.lastname ??
+                                        '',
+                                    style: getBoldtStyle(
+                                        color: ColorManager.black,
+                                        fontSize: 13),
+                                  ),
+                                ],
+                              ),
                         const SizedBox(
                           height: 2,
                         ),
@@ -374,6 +438,10 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
                                         return AddressLocatorScreen(
                                           isUpdate: true,
                                           userAddress: widget.userAddress,
+                                          defRegion: defRegion,
+                                          defaultReg: defaultReg,
+                                          defaultregid: defaultRegId,
+                                          stateidup: stateid,
                                         );
                                       }));
                                     },
@@ -409,10 +477,15 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
                               height: 100,
                               width: size.width,
                               child: GoogleMap(
+                                onTap: (_) {
+                                  openGoogleMaps(currentLocator.latitude,
+                                      currentLocator.longitude);
+                                },
                                 myLocationEnabled: true,
+                                mapType: MapType.satellite,
                                 initialCameraPosition: CameraPosition(
                                   target: currentLocator,
-                                  zoom: 4.0,
+                                  zoom: 8.0,
                                 ),
                                 onMapCreated: (controller) {
                                   setState(() {
@@ -608,7 +681,11 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
                                         });
                                         defaultReg = null;
                                         await getRegionData(
-                                            context, selectedValue?.countryId);
+                                          context,
+                                          selectedValue?.countryId,
+                                        );
+                                        defRegion = null;
+                                        provider.clearStates();
                                         setState(() {});
                                       },
                                       buttonHeight: 40,
@@ -751,6 +828,11 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
                                                 value?.cityName as String;
                                             defaultRegId = value?.id as int;
                                           });
+                                          provider.clearStates();
+                                          defRegion = null;
+                                          getStateData(context, defaultRegId);
+                                          setState(() {});
+
                                           // s(selectedValue);
                                         },
                                         buttonHeight: 50,
@@ -863,16 +945,173 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
                                         ),
                                       ],
                                     ),
-                                    child: TextField(
-                                      style: const TextStyle(),
-                                      controller: AddressEditControllers
-                                          .stateController,
-                                      decoration: InputDecoration(
-                                          hintText: str.ae_state_h,
-                                          hintStyle: getRegularStyle(
-                                              color: const Color.fromARGB(
-                                                  255, 173, 173, 173),
-                                              fontSize: 15)),
+                                    child: Container(
+                                      width: size.width * .44,
+                                      // height: mob ? 50 : 35,
+                                      decoration: BoxDecoration(
+                                          boxShadow: [
+                                            BoxShadow(
+                                              blurRadius: 10.0,
+                                              color: Colors.grey.shade300,
+                                              // offset: const Offset(5, 8.5),
+                                            ),
+                                          ],
+                                          color: ColorManager.whiteColor,
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      child:
+                                          // TextField(
+                                          //   // style: const TextStyle(),
+                                          //   controller:
+                                          //       ServiceControllers
+                                          //           .stateController,
+                                          //   decoration: InputDecoration(
+                                          //       hintText:
+                                          //           str.s_state,
+                                          //       hintStyle: getRegularStyle(
+                                          //           color: const Color
+                                          //                   .fromARGB(
+                                          //               255,
+                                          //               173,
+                                          //               173,
+                                          //               173),
+                                          //           fontSize: Responsive
+                                          //                   .isMobile(
+                                          //                       context)
+                                          //               ? 15
+                                          //               : 10)),
+                                          // ),
+                                          DropdownButtonHideUnderline(
+                                        child: DropdownButton2<States>(
+                                          isExpanded: true,
+                                          // focusNode: nfocus,
+                                          icon: const Icon(
+                                            Icons.keyboard_arrow_down,
+                                            size: 35,
+                                            color: ColorManager.black,
+                                          ),
+                                          hint: provider.stateinfomodel
+                                                          ?.result ==
+                                                      false ||
+                                                  provider.stateinfomodel
+                                                          ?.result ==
+                                                      null
+                                              ? Text(str.no_ava,
+                                                  style: getRegularStyle(
+                                                      color: const Color.fromARGB(
+                                                          255, 173, 173, 173),
+                                                      fontSize: 15))
+                                              : Text(str.p_state_h,
+                                                  style: getRegularStyle(
+                                                      color: const Color.fromARGB(
+                                                          255, 173, 173, 173),
+                                                      fontSize: 15)),
+                                          items: provider
+                                              .stateinfomodel?.states!
+                                              .map((item) =>
+                                                  DropdownMenuItem<States>(
+                                                    value: item,
+                                                    child: Text(
+                                                        item.stateName ?? '',
+                                                        style: getRegularStyle(
+                                                            color: ColorManager
+                                                                .black,
+                                                            fontSize: 15)),
+                                                  ))
+                                              .toList(),
+                                          // value: defRegion,
+                                          onChanged: (value) {
+                                            print(provider
+                                                .stateinfomodel?.result);
+                                            setState(() {
+                                              defRegion =
+                                                  value?.stateName as String;
+                                              stateid = value?.id.toString();
+                                            });
+
+                                            // s(selectedValue);
+                                          },
+                                          buttonHeight: 50,
+                                          dropdownMaxHeight: size.height * .6,
+                                          // buttonWidth: 140,
+                                          itemHeight: 40,
+                                          buttonPadding:
+                                              const EdgeInsets.fromLTRB(
+                                                  12, 0, 8, 0),
+                                          // dropdownWidth: size.width,
+                                          itemPadding:
+                                              const EdgeInsets.fromLTRB(
+                                                  12, 0, 12, 0),
+                                          // searchController:
+                                          //     AddressEditControllers
+                                          //         .searchController,
+                                          // searchInnerWidget: Padding(
+                                          //   padding:
+                                          //       const EdgeInsets.only(
+                                          //     top: 8,
+                                          //     bottom: 4,
+                                          //     right: 8,
+                                          //     left: 8,
+                                          //   ),
+                                          //   child: TextFormField(
+                                          //     controller:
+                                          //         AddressEditControllers
+                                          //             .searchController,
+                                          //     decoration: InputDecoration(
+                                          //       isDense: true,
+                                          //       contentPadding:
+                                          //           const EdgeInsets
+                                          //               .symmetric(
+                                          //         horizontal: 10,
+                                          //         vertical: 8,
+                                          //       ),
+                                          //       // TODO: localisation
+                                          //       hintText:
+                                          //           str.s_search_country,
+                                          //       hintStyle:
+                                          //           const TextStyle(
+                                          //               fontSize: 12),
+                                          //       border:
+                                          //           OutlineInputBorder(
+                                          //         borderRadius:
+                                          //             BorderRadius
+                                          //                 .circular(8),
+                                          //       ),
+                                          //     ),
+                                          //   ),
+                                          // ),
+                                          // searchMatchFn:
+                                          //     (item, searchValue) {
+                                          //   return (item.value
+                                          //       .toString()
+                                          //       .toLowerCase()
+                                          //       .contains(searchValue));
+                                          // },
+                                          customButton: defRegion == null
+                                              ? null
+                                              : Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                              .fromLTRB(
+                                                          10, 15, 10, 15),
+                                                      child:
+                                                          Text(defRegion ?? ''),
+                                                    ),
+                                                  ],
+                                                ),
+                                          //This to clear the search value when you close the menu
+                                          // onMenuStateChange: (isOpen) {
+                                          //   if (!isOpen) {
+                                          //     AddressEditControllers
+                                          //         .searchController
+                                          //         .clear();
+                                          //   }
+                                          // }
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -981,6 +1220,9 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
   }
 
   addressUpdaeFun(BuildContext context) async {
+    print(defaultReg.toString());
+    print(
+        "state====================================================${stateid}");
     final provider = Provider.of<DataProvider>(context, listen: false);
     final addressName = AddressEditControllers.addressNameController.text;
     final address = AddressEditControllers.addressController.text;
@@ -988,7 +1230,7 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
         ? (selectedValue?.countryId)
         : widget.userAddress.countryId;
     final region = defaultRegId;
-    final state = AddressEditControllers.stateController.text;
+    final state = defRegion != null ? (stateid) : '';
     final flat = AddressEditControllers.flatNoController.text;
     final id = widget.userAddress.id;
     final latitude = provider.addressLatitude ?? widget.userAddress.latitude;
@@ -1115,8 +1357,10 @@ class _UserAddressUpdateState extends State<UserAddressUpdate> {
     AddressEditControllers.flatNoController.text =
         widget.userAddress.homeNo ?? '';
     countryValue = widget.userAddress.country;
-    defaultReg = widget.userAddress.region;
+    defaultReg = widget.userAddress.city;
+    defRegion = widget.userAddress.state;
     defaultRegId = widget.userAddress.regionId;
+    stateid = widget.userAddress.stateid;
   }
 
   clearFields() {

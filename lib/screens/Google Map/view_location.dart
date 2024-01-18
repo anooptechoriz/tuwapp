@@ -90,6 +90,7 @@ class _ViewLocationState extends State<ViewLocationScreen> {
           alignment: AlignmentDirectional.bottomCenter,
           children: [
             GoogleMap(
+                mapType: MapType.satellite,
                 buildingsEnabled: true,
                 indoorViewEnabled: true,
                 // liteModeEnabled: true,
@@ -111,7 +112,7 @@ class _ViewLocationState extends State<ViewLocationScreen> {
                 },
                 initialCameraPosition: CameraPosition(
                   target: currentLocator!,
-                  zoom: 11.0,
+                  zoom: 18.0,
                 ),
                 markers: <Marker>{
                   Marker(

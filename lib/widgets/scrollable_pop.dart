@@ -3,31 +3,65 @@ import 'package:flutter/material.dart';
 
 class ScrollableDialogBox extends StatefulWidget {
   final List<String> images;
+  final int index;
 
-  ScrollableDialogBox({required this.images});
+  ScrollableDialogBox({required this.images, required this.index});
 
   @override
   _ScrollableDialogBoxState createState() => _ScrollableDialogBoxState();
 }
 
 class _ScrollableDialogBoxState extends State<ScrollableDialogBox> {
+  late PageController pageController;
   int currentIndex = 0;
+  @override
+  void initState() {
+    super.initState();
+    // Initialize currentIndex with the provided index
+    currentIndex = widget.index;
+
+    // Initialize PageController with the provided index
+    pageController = PageController(initialPage: currentIndex);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Preload images to ensure they are cached
+    for (int i = 0; i < widget.images.length; i++) {
+      precacheImage(CachedNetworkImageProvider(widget.images[i]), context);
+    }
+  }
 
   // Function to show the next image
   void showNextImage() {
-    setState(() {
-      currentIndex = (currentIndex + 1) % widget.images.length;
-    });
+    // setState(() {
+    //   currentIndex = (currentIndex + 1) % widget.images.length;
+    // });
+    if (currentIndex < widget.images.length - 1) {
+      pageController.nextPage(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
     print(currentIndex);
     print(widget.images.length);
   }
 
   // Function to show the previous image
   void showPreviousImage() {
-    setState(() {
-      currentIndex =
-          (currentIndex - 1 + widget.images.length) % widget.images.length;
-    });
+    // setState(() {
+    //   currentIndex =
+    //       (currentIndex - 1 + widget.images.length) % widget.images.length;
+    // });
+
+    if (currentIndex > 0) {
+      pageController.previousPage(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -39,10 +73,20 @@ class _ScrollableDialogBoxState extends State<ScrollableDialogBox> {
           SizedBox(
             height: size.height * 0.7,
             width: size.width * 0.9,
-            child: CachedNetworkImage(
-              imageUrl: widget.images[currentIndex],
-              fit: BoxFit.cover,
-            ),
+            child: PageView.builder(
+                controller: pageController,
+                itemCount: widget.images.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    currentIndex = index;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  return CachedNetworkImage(
+                    imageUrl: widget.images[index],
+                    fit: BoxFit.fitWidth,
+                  );
+                }),
           ),
           Positioned(
             top: 5,

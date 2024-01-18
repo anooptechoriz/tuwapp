@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:social_media_services/components/color_manager.dart';
 import 'package:social_media_services/components/styles_manager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -9,6 +10,9 @@ class CustomStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Hive.box('LocalLan').get(
+      'lang',
+    );
     final str = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -65,9 +69,13 @@ class CustomStepper extends StatelessWidget {
               Text(str.cs_choose_service,
                   style: getMediumtStyle(
                       color: ColorManager.paymentPageColor1, fontSize: 10)),
-              const SizedBox(
-                height: 3,
-              ),
+              lang == 'hi'
+                  ? const SizedBox(
+                      height: 1.1,
+                    )
+                  : const SizedBox(
+                      height: 3,
+                    ),
               Stack(
                 alignment: Alignment.center,
                 children: [

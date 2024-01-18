@@ -63,6 +63,7 @@ class _ShareLocationState extends State<ShareLocation> {
           alignment: AlignmentDirectional.bottomCenter,
           children: [
             GoogleMap(
+              mapType: MapType.satellite,
               myLocationEnabled: true, buildingsEnabled: true,
               // compassEnabled: true,
 
@@ -78,7 +79,7 @@ class _ShareLocationState extends State<ShareLocation> {
 
               initialCameraPosition: CameraPosition(
                 target: currentLocator!,
-                zoom: 11.0,
+                zoom: 18.0,
               ),
               markers: <Marker>{
                 Marker(

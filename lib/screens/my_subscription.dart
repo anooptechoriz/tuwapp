@@ -224,7 +224,7 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
               subscription?.length == 0
                   ? Center(
                       child: Text(
-                        "No Subscription Available",
+                        str.pp_no_sub,
                         style: getRegularStyle(
                             color: ColorManager.grayLight, fontSize: 16),
                       ),

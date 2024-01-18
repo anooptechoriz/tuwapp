@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,8 @@ import 'package:social_media_services/components/styles_manager.dart';
 import 'package:social_media_services/controllers/controllers.dart';
 import 'package:social_media_services/model/get_countries.dart';
 import 'package:social_media_services/model/get_home.dart';
+import 'package:social_media_services/model/region_info_model.dart';
+import 'package:social_media_services/model/state_info_model.dart';
 import 'package:social_media_services/providers/data_provider.dart';
 import 'package:social_media_services/providers/servicer_provider.dart';
 import 'package:social_media_services/responsive/responsive.dart';
@@ -36,15 +39,29 @@ import 'package:social_media_services/widgets/title_widget.dart';
 import 'package:social_media_services/widgets/top_logo.dart';
 
 class ServicerPage extends StatefulWidget {
+  bool isUpdate;
   int? id;
   bool? isAdvancedSearchEnabled;
   Services? homeservice;
-  ServicerPage({
-    super.key,
-    this.id,
-    this.isAdvancedSearchEnabled = false,
-    this.homeservice,
-  });
+  String? defRegion;
+  String? defstate;
+  int? countryid;
+  int? regid;
+  int? stateid;
+  String? selectedValue;
+  String? Servicer;
+  ServicerPage(
+      {super.key,
+      this.id,
+      this.isAdvancedSearchEnabled = false,
+      this.homeservice,
+      this.isUpdate = false,
+      this.defRegion,
+      this.defstate,
+      this.selectedValue,
+      this.countryid,
+      this.regid,
+      this.stateid});
 
   @override
   State<ServicerPage> createState() => _ServicerPageState();
@@ -56,29 +73,40 @@ class _ServicerPageState extends State<ServicerPage> {
   final int _selectedIndex = 2;
   final List<Widget> _screens = [const ServiceHomePage(), const MessagePage()];
   String lang = '';
-
+  dynamic service;
   bool isPickerSelected = false;
   bool isSerDrawerOpened = false;
   bool isAdvancedSearchEnabled = false;
+  bool? isUpdate;
 
   List<Countries> r2 = [];
   Timer? _debounce;
   List<String> r3 = [];
   int? countryid;
+  int? regid;
+  int? stateid;
   int? countryid2;
   List<Countries> r = [];
+  List<Regions> reg = [];
+  // List<States> s = [];
   String? defRegion;
+  String? defstate;
 
   @override
   void initState() {
     super.initState();
-    ServiceControllers.servicerController.clear();
+    widget.isUpdate == false
+        ? ServiceControllers.servicerController.clear()
+        : null;
+    widget.isUpdate == false ? ServiceControllers.mapController.clear() : null;
+
+    service = Hive.box('service').get('service');
     lang = Hive.box('LocalLan').get(
       'lang',
     );
+    log("language=======$lang");
+
     isAdvancedSearchEnabled = widget.isAdvancedSearchEnabled ?? false;
-    countryid = 165;
-    selectedValue = "Oman";
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final str = AppLocalizations.of(context)!;
@@ -91,21 +119,42 @@ class _ServicerPageState extends State<ServicerPage> {
         r3.add(provider.countriesModel!.countries![i].countryName!);
         i++;
       }
+
       ServiceControllers.mapController.text = servicerProvider
                   .servicerLatitude !=
               null
           ? "${servicerProvider.servicerLatitude} ${servicerProvider.servicerLongitude}"
           : '';
-      provider.servicerSelectedCountry = '';
-      provider.clearRegions();
-      await getRegionData(context, 165);
-      await getStateData(context, 5);
-      setState(() {});
+
+      if (widget.isUpdate == true) {
+        selectedValue = widget.selectedValue;
+        defRegion = widget.defRegion;
+        defstate = widget.defstate;
+        countryid = widget.countryid;
+        stateid = widget.stateid;
+        regid = widget.regid;
+        setState(() {});
+      } else {
+        countryid = 165;
+
+        selectedValue = "Oman";
+
+        await getRegionData(
+          context,
+          countryid,
+        );
+        provider.clearStates();
+
+        setState(() {});
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    print("+++++++++++++++++++++++${widget.isUpdate.toString()}");
+    print("+++++++++++++++++++++++++++++++++++${widget.countryid.toString()}");
+    print("=-=-=-==--=${widget.selectedValue}");
     final size = MediaQuery.of(context).size;
     final w = MediaQuery.of(context).size.width;
     final mob = Responsive.isMobile(context);
@@ -350,7 +399,7 @@ class _ServicerPageState extends State<ServicerPage> {
                                   Center(
                                     child: Text(
                                       // str.se_sub_services,
-                                      "${str.choose} ${widget.homeservice?.service}",
+                                      "${str.choose} ${service.toString()}",
                                       style: getBoldtStyle(
                                           color: ColorManager.black,
                                           fontSize: 18),
@@ -550,8 +599,8 @@ class _ServicerPageState extends State<ServicerPage> {
                                                         ],
                                                       ),
                                                       child: Container(
-                                                        width: size.width * .44,
-                                                        height: 50,
+                                                        width: size.width * .46,
+                                                        // height: 75,
                                                         decoration: BoxDecoration(
                                                             color: ColorManager
                                                                 .whiteColor,
@@ -579,12 +628,15 @@ class _ServicerPageState extends State<ServicerPage> {
                                                                       color: ColorManager
                                                                           .black,
                                                                     ),
-                                                                    hint: Text(str.ae_country_h,
-                                                                        style: getRegularStyle(
-                                                                            color: const Color.fromARGB(
-                                                                                255, 173, 173, 173),
-                                                                            fontSize:
-                                                                                15)),
+                                                                    hint:
+                                                                        Expanded(
+                                                                      child: Text(
+                                                                          str
+                                                                              .ae_country_h,
+                                                                          style: getRegularStyle(
+                                                                              color: const Color.fromARGB(255, 173, 173, 173),
+                                                                              fontSize: 15)),
+                                                                    ),
                                                                     items: r3
                                                                         .map((item) =>
                                                                             DropdownMenuItem<
@@ -603,20 +655,27 @@ class _ServicerPageState extends State<ServicerPage> {
                                                                             value
                                                                                 as String;
                                                                       });
+
                                                                       await s(
                                                                           selectedValue);
                                                                       defRegion =
                                                                           null;
+                                                                      defstate =
+                                                                          null;
+                                                                      provider
+                                                                          .clearStates();
                                                                       await getRegionData(
-                                                                          context,
-                                                                          countryid);
+                                                                        context,
+                                                                        countryid,
+                                                                      );
                                                                       setState(
                                                                           () {});
                                                                     },
                                                                     buttonHeight:
                                                                         40,
                                                                     dropdownMaxHeight:
-                                                                        size.height *
+                                                                        size
+                                                                                .height *
                                                                             .6,
                                                                     // buttonWidth: 140,
                                                                     itemHeight:
@@ -635,8 +694,10 @@ class _ServicerPageState extends State<ServicerPage> {
                                                                             12,
                                                                             0),
                                                                     searchController:
-                                                                        AddressEditControllers.searchController,
-                                                                    searchInnerWidget: Padding(
+                                                                        AddressEditControllers
+                                                                            .searchController,
+                                                                    searchInnerWidget:
+                                                                        Padding(
                                                                       padding:
                                                                           const EdgeInsets
                                                                               .only(
@@ -687,7 +748,9 @@ class _ServicerPageState extends State<ServicerPage> {
                                                                         ),
                                                                       ),
                                                                     ),
-                                                                    searchMatchFn: (item, searchValue) {
+                                                                    searchMatchFn:
+                                                                        (item,
+                                                                            searchValue) {
                                                                       return (item
                                                                           .value
                                                                           .toString()
@@ -696,7 +759,8 @@ class _ServicerPageState extends State<ServicerPage> {
                                                                               searchValue));
                                                                     },
                                                                     //This to clear the search value when you close the menu
-                                                                    onMenuStateChange: (isOpen) {
+                                                                    onMenuStateChange:
+                                                                        (isOpen) {
                                                                       if (!isOpen) {
                                                                         AddressEditControllers
                                                                             .searchController
@@ -761,7 +825,8 @@ class _ServicerPageState extends State<ServicerPage> {
                                                           //               : 10)),
                                                           // ),
                                                           DropdownButtonHideUnderline(
-                                                        child: DropdownButton2(
+                                                        child: DropdownButton2<
+                                                            Regions>(
                                                           isExpanded: true,
                                                           // focusNode: nfocus,
                                                           icon: const Icon(
@@ -795,9 +860,8 @@ class _ServicerPageState extends State<ServicerPage> {
                                                               ?.regions!
                                                               .map((item) =>
                                                                   DropdownMenuItem<
-                                                                      String>(
-                                                                    value: item
-                                                                        .cityName,
+                                                                      Regions>(
+                                                                    value: item,
                                                                     child: Text(
                                                                         item.cityName ??
                                                                             '',
@@ -808,20 +872,36 @@ class _ServicerPageState extends State<ServicerPage> {
                                                                   ))
                                                               .toList(),
                                                           // value: defRegion,
-                                                          onChanged: (value) {
+                                                          onChanged:
+                                                              (value) async {
                                                             print(provider
                                                                 .regionInfoModel
                                                                 ?.result);
+
                                                             setState(() {
                                                               defRegion = value
-                                                                  as String;
+                                                                  ?.cityName
+                                                                  .toString();
+                                                              regid = value?.id;
                                                             });
+                                                            print(
+                                                                "def=======$defRegion");
+
                                                             ProfileServiceControllers
                                                                     .regionController
                                                                     .text =
                                                                 defRegion ?? '';
-                                                            // s(selectedValue);
+                                                            // await R(defRegion);
+                                                            defstate = null;
+                                                            provider
+                                                                .clearStates();
+                                                            print(
+                                                                "regid==============================================$regid");
+                                                            await getStateData(
+                                                                context, regid);
+                                                            setState(() {});
                                                           },
+
                                                           buttonHeight: 50,
                                                           dropdownMaxHeight:
                                                               size.height * .6,
@@ -987,9 +1067,17 @@ class _ServicerPageState extends State<ServicerPage> {
                                                                         InkWell(
                                                                           onTap:
                                                                               () {
+                                                                            print(widget.homeservice?.service.toString());
                                                                             Navigator.push(context,
                                                                                 MaterialPageRoute(builder: (ctx) {
-                                                                              return const SearchServicerLocation();
+                                                                              return SearchServicerLocation(
+                                                                                countryid: countryid,
+                                                                                defRegion: defRegion,
+                                                                                defstate: defstate,
+                                                                                selectedvalue: selectedValue,
+                                                                                regid: regid,
+                                                                                stateid: stateid,
+                                                                              );
                                                                             }));
                                                                           },
                                                                           child: Container(
@@ -1043,38 +1131,210 @@ class _ServicerPageState extends State<ServicerPage> {
                                                           0, 10, 0, 0),
                                                       child: Container(
                                                         width: size.width * .44,
-                                                        height: mob ? 50 : 35,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                              blurRadius: 10.0,
-                                                              color: Colors.grey
-                                                                  .shade300,
-                                                              // offset: const Offset(5, 8.5),
+                                                        // height: mob ? 50 : 35,
+                                                        decoration: BoxDecoration(
+                                                            boxShadow: [
+                                                              BoxShadow(
+                                                                blurRadius:
+                                                                    10.0,
+                                                                color: Colors
+                                                                    .grey
+                                                                    .shade300,
+                                                                // offset: const Offset(5, 8.5),
+                                                              ),
+                                                            ],
+                                                            color: ColorManager
+                                                                .whiteColor,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8)),
+                                                        child:
+                                                            // TextField(
+                                                            //   // style: const TextStyle(),
+                                                            //   controller:
+                                                            //       ServiceControllers
+                                                            //           .stateController,
+                                                            //   decoration: InputDecoration(
+                                                            //       hintText:
+                                                            //           str.s_state,
+                                                            //       hintStyle: getRegularStyle(
+                                                            //           color: const Color
+                                                            //                   .fromARGB(
+                                                            //               255,
+                                                            //               173,
+                                                            //               173,
+                                                            //               173),
+                                                            //           fontSize: Responsive
+                                                            //                   .isMobile(
+                                                            //                       context)
+                                                            //               ? 15
+                                                            //               : 10)),
+                                                            // ),
+                                                            DropdownButtonHideUnderline(
+                                                          child:
+                                                              DropdownButton2<
+                                                                  States>(
+                                                            isExpanded: true,
+                                                            // focusNode: nfocus,
+                                                            icon: const Icon(
+                                                              Icons
+                                                                  .keyboard_arrow_down,
+                                                              size: 35,
+                                                              color:
+                                                                  ColorManager
+                                                                      .black,
                                                             ),
-                                                          ],
-                                                        ),
-                                                        child: TextField(
-                                                          // style: const TextStyle(),
-                                                          controller:
-                                                              ServiceControllers
-                                                                  .stateController,
-                                                          decoration: InputDecoration(
-                                                              hintText:
-                                                                  str.s_state,
-                                                              hintStyle: getRegularStyle(
-                                                                  color: const Color
-                                                                          .fromARGB(
-                                                                      255,
-                                                                      173,
-                                                                      173,
-                                                                      173),
-                                                                  fontSize: Responsive
-                                                                          .isMobile(
-                                                                              context)
-                                                                      ? 15
-                                                                      : 10)),
+                                                            hint: provider.stateinfomodel?.result == false ||
+                                                                    provider.stateinfomodel?.result ==
+                                                                        null
+                                                                ? Text(str.no_ava,
+                                                                    style: getRegularStyle(
+                                                                        color: const Color.fromARGB(
+                                                                            255,
+                                                                            173,
+                                                                            173,
+                                                                            173),
+                                                                        fontSize:
+                                                                            15))
+                                                                : Text(str.p_state_h,
+                                                                    style: getRegularStyle(
+                                                                        color: const Color.fromARGB(
+                                                                            255,
+                                                                            173,
+                                                                            173,
+                                                                            173),
+                                                                        fontSize: 15)),
+                                                            items: provider
+                                                                .stateinfomodel
+                                                                ?.states!
+                                                                .map((item) =>
+                                                                    DropdownMenuItem<
+                                                                        States>(
+                                                                      value:
+                                                                          item,
+                                                                      child: Text(
+                                                                          item.stateName ??
+                                                                              '',
+                                                                          style: getRegularStyle(
+                                                                              color: ColorManager.black,
+                                                                              fontSize: 15)),
+                                                                    ))
+                                                                .toList(),
+                                                            // value: defRegion,
+                                                            onChanged: (value) {
+                                                              print(provider
+                                                                  .stateinfomodel
+                                                                  ?.result);
+                                                              setState(() {
+                                                                defstate = value
+                                                                        ?.stateName
+                                                                    as String;
+                                                                stateid =
+                                                                    value?.id;
+                                                              });
+                                                              ProfileServiceControllers
+                                                                      .stateController
+                                                                      .text =
+                                                                  defstate ??
+                                                                      '';
+                                                              // s(selectedValue);
+                                                            },
+                                                            buttonHeight: 50,
+                                                            dropdownMaxHeight:
+                                                                size.height *
+                                                                    .6,
+                                                            // buttonWidth: 140,
+                                                            itemHeight: 40,
+                                                            buttonPadding:
+                                                                const EdgeInsets
+                                                                        .fromLTRB(
+                                                                    12,
+                                                                    0,
+                                                                    8,
+                                                                    0),
+                                                            // dropdownWidth: size.width,
+                                                            itemPadding:
+                                                                const EdgeInsets
+                                                                        .fromLTRB(
+                                                                    12,
+                                                                    0,
+                                                                    12,
+                                                                    0),
+                                                            // searchController:
+                                                            //     AddressEditControllers
+                                                            //         .searchController,
+                                                            // searchInnerWidget: Padding(
+                                                            //   padding:
+                                                            //       const EdgeInsets.only(
+                                                            //     top: 8,
+                                                            //     bottom: 4,
+                                                            //     right: 8,
+                                                            //     left: 8,
+                                                            //   ),
+                                                            //   child: TextFormField(
+                                                            //     controller:
+                                                            //         AddressEditControllers
+                                                            //             .searchController,
+                                                            //     decoration: InputDecoration(
+                                                            //       isDense: true,
+                                                            //       contentPadding:
+                                                            //           const EdgeInsets
+                                                            //               .symmetric(
+                                                            //         horizontal: 10,
+                                                            //         vertical: 8,
+                                                            //       ),
+                                                            //       // TODO: localisation
+                                                            //       hintText:
+                                                            //           str.s_search_country,
+                                                            //       hintStyle:
+                                                            //           const TextStyle(
+                                                            //               fontSize: 12),
+                                                            //       border:
+                                                            //           OutlineInputBorder(
+                                                            //         borderRadius:
+                                                            //             BorderRadius
+                                                            //                 .circular(8),
+                                                            //       ),
+                                                            //     ),
+                                                            //   ),
+                                                            // ),
+                                                            // searchMatchFn:
+                                                            //     (item, searchValue) {
+                                                            //   return (item.value
+                                                            //       .toString()
+                                                            //       .toLowerCase()
+                                                            //       .contains(searchValue));
+                                                            // },
+                                                            customButton:
+                                                                defstate == null
+                                                                    ? null
+                                                                    : Column(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.start,
+                                                                        children: [
+                                                                          Padding(
+                                                                            padding: const EdgeInsets.fromLTRB(
+                                                                                10,
+                                                                                15,
+                                                                                10,
+                                                                                15),
+                                                                            child:
+                                                                                Text(
+                                                                              defstate ?? '',
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                            //This to clear the search value when you close the menu
+                                                            // onMenuStateChange: (isOpen) {
+                                                            //   if (!isOpen) {
+                                                            //     AddressEditControllers
+                                                            //         .searchController
+                                                            //         .clear();
+                                                            //   }
+                                                            // }
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
@@ -1092,11 +1352,8 @@ class _ServicerPageState extends State<ServicerPage> {
                                                       context,
                                                       widget.id.toString(),
                                                       countryid,
-                                                      ServiceControllers
-                                                          .stateController.text,
-                                                      ServiceControllers
-                                                          .regionController
-                                                          .text,
+                                                      stateid,
+                                                      regid,
                                                       ServiceControllers
                                                           .servicerController
                                                           .text,
@@ -1178,7 +1435,9 @@ class _ServicerPageState extends State<ServicerPage> {
                                         ),
                                       ),
                                     ),
-                              provider.serviceManListModel!.serviceman!.isEmpty
+                              provider.serviceManListModel?.serviceman?.data
+                                          ?.isEmpty ==
+                                      true
                                   ? Padding(
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 10),
@@ -1200,24 +1459,28 @@ class _ServicerPageState extends State<ServicerPage> {
                                           child: InkWell(
                                               onTap: () {
                                                 servicerProvider.navServiceId =
-                                                    serviceManData![index].id;
+                                                    serviceManData!
+                                                        .data?[index].id;
                                                 Navigator.push(context,
                                                     MaterialPageRoute(
                                                         builder: (ctx) {
                                                   return ProfileLoading(
-                                                    serviceman:
-                                                        serviceManData[index],
+                                                    serviceman: serviceManData,
                                                     key: _scaffoldKey,
+                                                    serviceId: serviceManData
+                                                        .data?[index].id
+                                                        .toString(),
                                                   );
                                                 }));
                                               },
                                               child: ServicerListTile(
-                                                serviceman:
-                                                    serviceManData![index],
+                                                serviceman: serviceManData,
+                                                index: index,
                                               )),
                                         );
                                       }),
-                                      itemCount: serviceManData?.length ?? 0,
+                                      itemCount:
+                                          serviceManData?.data?.length ?? 0,
                                     ),
 
                               const SizedBox(
@@ -1359,7 +1622,31 @@ class _ServicerPageState extends State<ServicerPage> {
         });
         countryid = r[0].countryId;
         provider.selectedCountryId = r[0].countryId;
+        Hive.box('service').put('cid', countryid);
         provider.servicerSelectedCountry = r[0].countryId.toString();
+      }
+    });
+  }
+
+  R(filter) {
+    setState(() {
+      reg = [];
+    });
+    final provider = Provider.of<DataProvider>(context, listen: false);
+    provider.regionInfoModel?.regions?.forEach((element) {
+      final r = element.cityName?.contains(filter);
+
+      if (r == true) {
+        if (defRegion != element.cityName) {
+          return;
+        }
+        setState(() {
+          reg.add(element);
+        });
+        regid = reg[0].id;
+        provider.selectedRegid = reg[0].id;
+        Hive.box('service').put('rid', regid);
+        provider.servicerSelectedReg = reg[0].cityName.toString();
       }
     });
   }
@@ -1374,8 +1661,8 @@ class _ServicerPageState extends State<ServicerPage> {
         context,
         widget.id.toString(),
         countryid2,
-        ServiceControllers.stateController.text,
-        ServiceControllers.regionController.text,
+        regid,
+        stateid,
         ServiceControllers.servicerController.text,
         provider.isFourWheelerSelected && provider.isTwoWheelerSelected
             ? ''

@@ -21,6 +21,7 @@ import 'package:social_media_services/model/place_order.dart';
 import 'package:social_media_services/model/region_info_model.dart';
 import 'package:social_media_services/model/serviceManLIst.dart';
 import 'package:social_media_services/model/serviceman_profile_model.dart';
+import 'package:social_media_services/model/state_info_model.dart';
 import 'package:social_media_services/model/sub_services_model.dart';
 import 'package:social_media_services/model/user_address_show.dart';
 import 'package:social_media_services/model/viewProfileModel.dart';
@@ -29,6 +30,7 @@ import 'package:social_media_services/model/view_chat_message_model.dart';
 class DataProvider with ChangeNotifier {
   LanguageModel? languageModel;
   RegionInfo? regionInfoModel;
+  Stateinfo? stateinfomodel;
   Timer? timer;
   String? explorerLat;
   String? explorerLong;
@@ -47,8 +49,17 @@ class DataProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void stateinfodata(value) {
+    stateinfomodel = value;
+    notifyListeners();
+  }
+
   void clearRegions() {
     regionInfoModel = null;
+  }
+
+  void clearStates() {
+    stateinfomodel = null;
   }
 
   CountriesModel? countriesModel;
@@ -209,10 +220,12 @@ class DataProvider with ChangeNotifier {
   bool isSendingSuccessFull = false;
 
   String? servicerSelectedCountry;
+  String? servicerSelectedReg;
 
   String gender = 'male';
   int? serviceId;
   int? selectedCountryId;
+  int? selectedRegid;
   int? packageId;
   int? packageAmount;
 

@@ -25,6 +25,12 @@ class AddressLocatorScreen extends StatefulWidget {
   final String? lot;
   XFile? imageFile;
   String? defaultReg;
+  String? defRegion;
+  String? selectedvalue;
+  int? countryid;
+  int? defaultregid;
+  String? stateidup;
+  int? stateid;
   AddressLocatorScreen(
       {Key? key,
       this.isUpdate = false,
@@ -32,7 +38,13 @@ class AddressLocatorScreen extends StatefulWidget {
       this.lat,
       this.lot,
       this.imageFile,
-      this.defaultReg})
+      this.defaultReg,
+      this.defRegion,
+      this.selectedvalue,
+      this.countryid,
+      this.defaultregid,
+      this.stateid,
+      this.stateidup})
       : super(key: key);
 
   @override
@@ -53,6 +65,7 @@ class _AddressLocatorScreenState extends State<AddressLocatorScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final provider = Provider.of<DataProvider>(context, listen: false);
+      GoogleMapControllers.googleMapSearchController.clear();
       currentLocator = LatLng(
           provider.addressLatitude ??
               double.parse(
@@ -101,7 +114,13 @@ class _AddressLocatorScreenState extends State<AddressLocatorScreen> {
                         Navigator.pushReplacement(context,
                             MaterialPageRoute(builder: (ctx) {
                           return UserAddressUpdate(
-                              isUpdate: true, userAddress: widget.userAddress!);
+                            isUpdate: true,
+                            userAddress: widget.userAddress!,
+                            defRegion: widget.defRegion,
+                            defaultReg: widget.defaultReg,
+                            regid: widget.defaultregid,
+                            stateid: widget.stateidup,
+                          );
                         }));
                       } else {
                         Navigator.pushReplacement(context,
@@ -111,6 +130,11 @@ class _AddressLocatorScreenState extends State<AddressLocatorScreen> {
                             lat: widget.lat,
                             lot: widget.lot, imageFile: widget.imageFile,
                             defaultReg: widget.defaultReg,
+                            defRegion: widget.defRegion,
+                            selectedvalue: widget.selectedvalue,
+                            countryid: widget.countryid,
+                            defaultregid: widget.defaultregid,
+                            stateid: widget.stateid,
                             // locUpdate: true,
                           );
                         }));
@@ -118,15 +142,15 @@ class _AddressLocatorScreenState extends State<AddressLocatorScreen> {
                     },
                     child: isLoading
                         ? const CircularProgressIndicator()
-                        :
-                        //  Text(str.gm_new_location)
-                        const Text("Confirm Location")),
+                        : Text(str.gm_choose_location)),
+                // Text(str.gm_co)),
               )
             : null,
         body: Stack(
           alignment: AlignmentDirectional.bottomCenter,
           children: [
             GoogleMap(
+              mapType: MapType.satellite,
               myLocationEnabled: true, buildingsEnabled: true,
 
               indoorViewEnabled: true,
@@ -147,7 +171,7 @@ class _AddressLocatorScreenState extends State<AddressLocatorScreen> {
 
               initialCameraPosition: CameraPosition(
                 target: currentLocator!,
-                zoom: 11.0,
+                zoom: 18.0,
               ),
               markers: <Marker>{
                 Marker(
@@ -182,6 +206,9 @@ class _AddressLocatorScreenState extends State<AddressLocatorScreen> {
                   width: size.width * .9,
                   height: 50,
                   child: TextField(
+                      onSubmitted: (value) async {
+                        searchLocation();
+                      },
                       controller:
                           GoogleMapControllers.googleMapSearchController,
                       decoration: InputDecoration(

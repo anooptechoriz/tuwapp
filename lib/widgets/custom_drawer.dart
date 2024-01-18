@@ -120,6 +120,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     },
                   ),
                   CustomDrawerList(
+                    title: str.t_2,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, Routes.termsAndConditions);
+                    },
+                  ),
+                  CustomDrawerList(
                     title: str.pp_settings,
                     onTap: () {
                       Navigator.pop(context);

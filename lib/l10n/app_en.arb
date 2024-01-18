@@ -71,7 +71,8 @@
     "c_service_group":"Service Group",
     "c_service_group_h":"Enter Group",
     "c_service_list":"Service List",
-     "c_service_list_h":"Service List",
+    "c_service_list_h1":"Enter List",
+    "c_service_list_h":"Service List",
     "c_vehicle":"Vehicle Registration Card/ CR Copy",
     "c_browse":"Browse",
     "c_pay":"CONTINUE TO PAY",  
@@ -125,6 +126,7 @@
     "pp_settings":"Language Settings",
     "pp_my_Services":"My Services",
     "pp_my_sub":"My Subscription",
+    "pp_no_sub":"No subscription available",
 
     "w_wishList":"WishList",
 
@@ -137,6 +139,7 @@
     "su_time":"Time",
     "su_service_fee":"Service Fee",
     "su_discount":"Discount",
+    "su_offerprice":"Offer price",
     "su_vat":"VAT",
     "su_mobile":"Mobile No",
     "su_exp":"Exp Date",
@@ -207,11 +210,11 @@
     "mh_recents":"Recents",
 
     "ps_snack_card":"Please Enter A Card Holder Name",
-    "ps_snack_card_no":"Please Enter A Card Number",
-    "ps_snack_expiry":"Please Enter Card Expiry Date",
+    "ps_snack_card_no":"Please enter a card number",
+    "ps_snack_expiry":"Please enter card expiry date",
     "ps_snack_cvv":"Please Enter Your Civil Card Number",
-    "ps_snack_package":"Please Choose a package to continue",
-    "ps_snack_coupen":"Please Enter a Coupen code to redeem",
+    "ps_snack_package":"Please choose a package to continue",
+    "ps_snack_coupen":"Please enter a coupon code to redeem",
     "e_snack_name":"First name is required",
     "e_snack_dob":"Date of birth is required",
     "e_snack_country_field":"Country field can not be empty",
@@ -232,18 +235,22 @@
     "msb_pur":"Purchase Date :",
     "msb_sub":"My Subscription",
 
-    "snack_coupen_av":"No Coupen code available",
+    "snack_coupen_av":"No coupon code available",
     "snack_get_location":"Getting Current Location...",
     "snack_done":"Done",
-    "snack_choose_group":"Please Choose a Service Group",
-    "snack_upload":"Please Upload a File",
+    "snack_choose_group":"Please choose a service group",
+    "snack_upload":"Please choose a sub service",
+    "snack_upload_file":"Please choose a file", 
     "snack_no_address":"No Address Available",
-    "snack_phone_digits":"Mobile Number must not be below 8 digits",
+    "snack_phone_digits":"Mobile number must not be below 8 digits",
     "snack_enable_loc":"Enable Location for further access",
     "snack_message_sent":"The Message can't be sent at the Moment",
+    "snack_customer_report":"Reported customer successfully",
+    "snack_package":"There is no subscription package available under this services. Please choose another service",
 
     "gm_new_location":"Confirm New Location",
-    "gm_search":"Search Google Maps",
+    "gm_choose_location":"Choose Location",
+    "gm_search":"Search google map",
     "gm_search_servicer":"Search Servicer on this Location",
 
     "no_connection":"Slow or no internet connection",
@@ -253,6 +260,7 @@
     "di_delete":"Delete address field!",
     "di_delete2":"Are you sure you want to",
     "di_delete3":"delete",
+    "di_deleteimg":"Delete Image!",
     "di_dont":"I Don't Want To",
     "di_allow":"Allow",
 
@@ -282,7 +290,7 @@
     "a_region":"Region is required",
     "a_state":"State is required",
     "a_flat":"Flat No is required",
-    "a_loc":"Please Choose an address Location",
+    "a_loc":"Please choose an address location",
     
 
         "sl_select":"Select Language",
@@ -303,6 +311,7 @@
 "proceed":"Proceed",
 "explore":"Explore",
 "choose":"Choose",
+"yesterday":"yesterday",
 
 "delete_account":"Delete Account",
 

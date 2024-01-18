@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ import 'package:social_media_services/components/color_manager.dart';
 import 'package:social_media_services/components/styles_manager.dart';
 import 'package:social_media_services/controllers/controllers.dart';
 import 'package:social_media_services/model/get_countries.dart';
+import 'package:social_media_services/model/region_info_model.dart';
+import 'package:social_media_services/model/state_info_model.dart';
 import 'package:social_media_services/providers/data_provider.dart';
 import 'package:social_media_services/providers/otp_provider.dart';
 import 'package:social_media_services/responsive/responsive.dart';
@@ -48,6 +51,8 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
   bool value = true;
   bool isPickerSelected = false;
   String? defaultReg;
+  String? defRegion;
+  String? defState;
 
   FocusNode nfocus = FocusNode();
   FocusNode dobfocus = FocusNode();
@@ -55,10 +60,15 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
   int _selectedIndex = 2;
 
   String lang = '';
+  int? regi;
   int? countryid;
+  String? regid;
+  String? stateid;
   String gender = 'male';
+  Regions? regs;
 
   List<Countries> r = [];
+  List<Regions> reg = [];
 
   String? selectedValue;
   List<String> r3 = [];
@@ -78,6 +88,11 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
       final provider = Provider.of<DataProvider>(context, listen: false);
       final otpProvider = Provider.of<OTPProvider>(context, listen: false);
       int? n = provider.countriesModel?.countries?.length;
+      print(
+          "city=============================${provider.viewProfileModel?.userdetails?.countryId}");
+      print(
+          "state=============================${provider.viewProfileModel?.userdetails?.statename}");
+
       int i = 0;
       while (i < n!.toInt()) {
         r3.add(provider.countriesModel!.countries![i].countryName!);
@@ -85,17 +100,36 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
       }
       widget.isregister ? emptyFields() : fillFields(provider);
       viewProfile(context);
+      print(widget.isregister);
       if (widget.isregister) {
         selectedValue = otpProvider.userCountryName;
+        countryid = 165;
+        await getRegionData(context, countryid);
+        provider.clearStates();
+        setState(() {});
       }
+
       provider.viewProfileModel?.userdetails?.latitude == null
           ? await requestLocationPermission(context)
           : null;
-
+      // if (provider.viewProfileModel?.userdetails?.countryId == 165 &&
+      //     provider.viewProfileModel?.userdetails?.region == null) {
+      //   countryid = 165;
+      //   EditProfileControllers.regionController.text = '';
+      //   EditProfileControllers.stateController.text = '';
+      //   selectedValue = await getRegionData(context, countryid);
+      //   setState(() {});
+      // }
+      gender = provider.viewProfileModel?.userdetails?.gender ?? 'male';
       provider.clearRegions();
+      provider.clearStates();
+
       await getRegionData(
           context, provider.viewProfileModel?.userdetails?.countryId);
-      defaultReg = provider.viewProfileModel?.userdetails?.region;
+      await getStateData(
+          context, provider.viewProfileModel?.userdetails?.region);
+
+      defState = provider.viewProfileModel?.userdetails?.statename;
       setState(() {});
       // getCustomerParent(context);
     });
@@ -449,7 +483,7 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
                                                   isMaleSelected: value,
                                                 ),
                                               ),
-                                              TitleWidget(name: str.e_female),
+                                              TitleWidget(name: str.p_female),
                                             ],
                                           ),
                                         )
@@ -524,15 +558,20 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
                                                 });
 
                                                 await s(selectedValue);
+                                                regid = null;
+                                                stateid = null;
 
-                                                defaultReg = null;
+                                                // provider.clearRegions();
+                                                provider.clearStates();
+
                                                 await getRegionData(
                                                     context, countryid);
                                                 // print(defaultReg);
-                                                // setState(() {
-                                                //   // defaultReg == null;
-                                                //   defaultReg = 'Al Dakhiliya';
-                                                // });
+                                                setState(() {
+                                                  defaultReg = null;
+                                                  defState = null;
+                                                  stateid = null;
+                                                });
                                               },
                                               buttonHeight: 40,
                                               dropdownMaxHeight: h * .6,
@@ -646,7 +685,7 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
                                             //                   : 10)),
                                             // ),
                                             child: DropdownButtonHideUnderline(
-                                              child: DropdownButton2(
+                                              child: DropdownButton2<Regions>(
                                                 isExpanded: true,
                                                 focusNode: nfocus,
                                                 icon: const Icon(
@@ -654,18 +693,27 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
                                                   size: 35,
                                                   color: ColorManager.black,
                                                 ),
-                                                hint: Text(str.p_region_h,
-                                                    style: getRegularStyle(
-                                                        color: const Color
-                                                                .fromARGB(
-                                                            255, 173, 173, 173),
-                                                        fontSize: 15)),
+                                                hint: provider.regionInfoModel?.result ==
+                                                            false ||
+                                                        provider.regionInfoModel
+                                                                ?.result ==
+                                                            null
+                                                    ? Text(str.no_ava,
+                                                        style: getRegularStyle(
+                                                            color: const Color.fromARGB(
+                                                                255, 173, 173, 173),
+                                                            fontSize: 15))
+                                                    : Text(str.p_region_h,
+                                                        style: getRegularStyle(
+                                                            color: const Color.fromARGB(
+                                                                255, 173, 173, 173),
+                                                            fontSize: 15)),
                                                 items: provider
                                                     .regionInfoModel?.regions!
                                                     .map((item) =>
                                                         DropdownMenuItem<
-                                                            String>(
-                                                          value: item.cityName,
+                                                            Regions>(
+                                                          value: item,
                                                           child: Text(
                                                               item.cityName ??
                                                                   '',
@@ -678,15 +726,24 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
                                                         ))
                                                     .toList(),
                                                 // value: defaultReg,
-                                                onChanged: (value) {
+                                                onChanged: (value) async {
                                                   setState(() {
-                                                    defaultReg =
-                                                        value as String;
+                                                    defaultReg = value?.cityName
+                                                        .toString();
+                                                    regid =
+                                                        value?.id.toString();
                                                   });
                                                   EditProfileControllers
                                                       .regionController
                                                       .text = defaultReg ?? '';
                                                   // s(selectedValue);
+                                                  provider.clearStates();
+
+                                                  defState = null;
+                                                  stateid = null;
+                                                  await getStateData(
+                                                      context, regid);
+                                                  setState(() {});
                                                 },
                                                 buttonHeight: 50,
                                                 dropdownMaxHeight: h * .6,
@@ -806,24 +863,197 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
                                                 ),
                                               ],
                                             ),
-                                            child: TextField(
-                                              style: const TextStyle(),
-                                              controller: EditProfileControllers
-                                                  .stateController,
-                                              decoration: InputDecoration(
-                                                  hintText: str.p_city_h,
-                                                  hintStyle: getRegularStyle(
+                                            child: Container(
+                                              width: size.width * .44,
+                                              // height: mob ? 50 : 35,
+                                              decoration: BoxDecoration(
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      blurRadius: 10.0,
                                                       color:
-                                                          const Color.fromARGB(
-                                                              255,
-                                                              173,
-                                                              173,
-                                                              173),
-                                                      fontSize:
-                                                          Responsive.isMobile(
-                                                                  context)
-                                                              ? 15
-                                                              : 10)),
+                                                          Colors.grey.shade300,
+                                                      // offset: const Offset(5, 8.5),
+                                                    ),
+                                                  ],
+                                                  color:
+                                                      ColorManager.whiteColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8)),
+                                              child:
+                                                  // TextField(
+                                                  //   // style: const TextStyle(),
+                                                  //   controller:
+                                                  //       ServiceControllers
+                                                  //           .stateController,
+                                                  //   decoration: InputDecoration(
+                                                  //       hintText:
+                                                  //           str.s_state,
+                                                  //       hintStyle: getRegularStyle(
+                                                  //           color: const Color
+                                                  //                   .fromARGB(
+                                                  //               255,
+                                                  //               173,
+                                                  //               173,
+                                                  //               173),
+                                                  //           fontSize: Responsive
+                                                  //                   .isMobile(
+                                                  //                       context)
+                                                  //               ? 15
+                                                  //               : 10)),
+                                                  // ),
+                                                  DropdownButtonHideUnderline(
+                                                child: DropdownButton2<States>(
+                                                  isExpanded: true,
+                                                  // focusNode: nfocus,
+                                                  icon: const Icon(
+                                                    Icons.keyboard_arrow_down,
+                                                    size: 35,
+                                                    color: ColorManager.black,
+                                                  ),
+                                                  hint: provider.stateinfomodel
+                                                                  ?.result ==
+                                                              false ||
+                                                          provider.stateinfomodel
+                                                                  ?.result ==
+                                                              null
+                                                      ? Text(str.no_ava,
+                                                          style: getRegularStyle(
+                                                              color:
+                                                                  const Color.fromARGB(
+                                                                      255,
+                                                                      173,
+                                                                      173,
+                                                                      173),
+                                                              fontSize: 15))
+                                                      : Text(str.p_state_h,
+                                                          style: getRegularStyle(
+                                                              color: const Color.fromARGB(255, 173, 173, 173),
+                                                              fontSize: 15)),
+                                                  items: provider
+                                                      .stateinfomodel?.states!
+                                                      .map((item) =>
+                                                          DropdownMenuItem<
+                                                              States>(
+                                                            value: item,
+                                                            child: Text(
+                                                                item.stateName ??
+                                                                    '',
+                                                                style: getRegularStyle(
+                                                                    color: ColorManager
+                                                                        .black,
+                                                                    fontSize:
+                                                                        15)),
+                                                          ))
+                                                      .toList(),
+                                                  // value: defRegion,
+                                                  onChanged: (value) {
+                                                    print(provider
+                                                        .stateinfomodel
+                                                        ?.result);
+                                                    setState(() {
+                                                      defState = value
+                                                          ?.stateName as String;
+                                                      stateid =
+                                                          value?.id.toString();
+                                                    });
+                                                    EditProfileControllers
+                                                        .stateController
+                                                        .text = defState ?? '';
+                                                    // s(selectedValue);
+                                                  },
+                                                  buttonHeight: 50,
+                                                  dropdownMaxHeight:
+                                                      size.height * .6,
+                                                  // buttonWidth: 140,
+                                                  itemHeight: 40,
+                                                  buttonPadding:
+                                                      const EdgeInsets.fromLTRB(
+                                                          12, 0, 8, 0),
+                                                  // dropdownWidth: size.width,
+                                                  itemPadding:
+                                                      const EdgeInsets.fromLTRB(
+                                                          12, 0, 12, 0),
+                                                  // searchController:
+                                                  //     AddressEditControllers
+                                                  //         .searchController,
+                                                  // searchInnerWidget: Padding(
+                                                  //   padding:
+                                                  //       const EdgeInsets.only(
+                                                  //     top: 8,
+                                                  //     bottom: 4,
+                                                  //     right: 8,
+                                                  //     left: 8,
+                                                  //   ),
+                                                  //   child: TextFormField(
+                                                  //     controller:
+                                                  //         AddressEditControllers
+                                                  //             .searchController,
+                                                  //     decoration: InputDecoration(
+                                                  //       isDense: true,
+                                                  //       contentPadding:
+                                                  //           const EdgeInsets
+                                                  //               .symmetric(
+                                                  //         horizontal: 10,
+                                                  //         vertical: 8,
+                                                  //       ),
+                                                  //       // TODO: localisation
+                                                  //       hintText:
+                                                  //           str.s_search_country,
+                                                  //       hintStyle:
+                                                  //           const TextStyle(
+                                                  //               fontSize: 12),
+                                                  //       border:
+                                                  //           OutlineInputBorder(
+                                                  //         borderRadius:
+                                                  //             BorderRadius
+                                                  //                 .circular(8),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ),
+                                                  // ),
+                                                  // searchMatchFn:
+                                                  //     (item, searchValue) {
+                                                  //   return (item.value
+                                                  //       .toString()
+                                                  //       .toLowerCase()
+                                                  //       .contains(searchValue));
+                                                  // },
+                                                  customButton: defState == null
+                                                      ? null
+                                                      : Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                          .fromLTRB(
+                                                                      10,
+                                                                      15,
+                                                                      10,
+                                                                      15),
+                                                              child: Text(
+                                                                  defState ??
+                                                                      '',
+                                                                  style: getRegularStyle(
+                                                                      color: ColorManager
+                                                                          .black,
+                                                                      fontSize:
+                                                                          12)),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                  //This to clear the search value when you close the menu
+                                                  // onMenuStateChange: (isOpen) {
+                                                  //   if (!isOpen) {
+                                                  //     AddressEditControllers
+                                                  //         .searchController
+                                                  //         .clear();
+                                                  //   }
+                                                  // }
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -998,12 +1228,14 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
   }
 
   updateProfile(firstname, lastname, dob) async {
+    log("regid===================${stateid.toString()}");
     final apiToken = Hive.box("token").get('api_token');
     final provider = Provider.of<DataProvider>(context, listen: false);
     final otpProvider = Provider.of<OTPProvider>(context, listen: false);
     final about = EditProfileControllers.aboutController.text;
-    final region = EditProfileControllers.regionController.text;
-    final state = EditProfileControllers.stateController.text;
+    final region = regid;
+    final state = stateid;
+
     final countryId =
         countryid ?? otpProvider.otpVerification?.customerdetails?.countryId;
     final firstName = toBeginningOfSentenceCase(firstname);
@@ -1059,8 +1291,31 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
     });
   }
 
+  // R(filter) {
+  //   setState(() {
+  //     reg = [];
+  //   });
+
+  //   final provider = Provider.of<DataProvider>(context, listen: false);
+  //   provider.regionInfoModel?.regions?.forEach((element) {
+  //     final m = element.cityName?.contains(filter);
+
+  //     if (m == true) {
+  //       if (defaultReg != element.cityName) {
+  //         return;
+  //       }
+  //       setState(() {
+  //         reg.add(element);
+  //       });
+  //       regid = reg[0].id;
+  //       provider.selectedRegid = reg[0].id;
+  //     }
+  //   });
+  // }
+
   fillFields(DataProvider provider) {
     final userDetails = provider.viewProfileModel?.userdetails;
+
     EditProfileControllers.firstNameController.text =
         provider.viewProfileModel?.userdetails?.firstname ?? '';
     EditProfileControllers.lastNameController.text =
@@ -1068,14 +1323,19 @@ class _ProfileDetailsPageState extends State<EditProfileScreen> {
     EditProfileControllers.dateController.text =
         provider.viewProfileModel?.userdetails?.dob ?? '';
     EditProfileControllers.regionController.text =
-        provider.viewProfileModel?.userdetails?.region ?? '';
+        provider.viewProfileModel?.userdetails?.city ?? '';
     EditProfileControllers.stateController.text =
-        provider.viewProfileModel?.userdetails?.state ?? '';
+        provider.viewProfileModel?.userdetails?.statename ?? '';
     EditProfileControllers.aboutController.text =
         provider.viewProfileModel?.userdetails?.about ?? '';
     selectedValue = provider.viewProfileModel?.userdetails?.countryName;
     countryid = provider.viewProfileModel?.userdetails?.countryId;
     value = userDetails?.gender == 'female' ? false : true;
+    defaultReg = provider.viewProfileModel?.userdetails?.city;
+    defState = provider.viewProfileModel?.userdetails?.statename;
+    regid = provider.viewProfileModel?.userdetails?.region;
+    stateid = provider.viewProfileModel?.userdetails?.state;
+
     print(provider.viewProfileModel?.userdetails?.gender);
   }
 

@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:maps_launcher/maps_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_services/API/address/getUserAddress.dart';
 import 'package:social_media_services/API/endpoint.dart';
@@ -20,6 +21,7 @@ import 'package:social_media_services/components/styles_manager.dart';
 import 'package:social_media_services/controllers/controllers.dart';
 import 'package:social_media_services/model/get_countries.dart';
 import 'package:social_media_services/model/region_info_model.dart';
+import 'package:social_media_services/model/state_info_model.dart';
 import 'package:social_media_services/providers/data_provider.dart';
 import 'package:social_media_services/responsive/responsive_width.dart';
 import 'package:social_media_services/screens/Google%20Map/address_locator.dart';
@@ -44,7 +46,12 @@ class UserAddressEdit extends StatefulWidget {
   final String? lot;
   XFile? imageFile;
   String? defaultReg;
+  String? defRegion;
+  String? selectedvalue;
   bool locUpdate;
+  int? countryid;
+  int? defaultregid;
+  int? stateid;
   UserAddressEdit(
       {super.key,
       this.isUpdate = false,
@@ -52,22 +59,31 @@ class UserAddressEdit extends StatefulWidget {
       this.lot,
       this.locUpdate = false,
       this.imageFile,
-      this.defaultReg});
+      this.defaultReg,
+      this.defRegion,
+      this.selectedvalue,
+      this.countryid,
+      this.defaultregid,
+      this.stateid});
 
   @override
   State<UserAddressEdit> createState() => _UserAddressEditState();
 }
 
 class _UserAddressEditState extends State<UserAddressEdit> {
-  Countries? selectedValue;
+  String? selectedValue;
   int _selectedIndex = 2;
   final List<Widget> _screens = [const ServiceHomePage(), const MessagePage()];
 
   String lang = '';
   String? imagePath;
   XFile? imageFile;
+
   String? defaultReg;
+  String? defRegion;
   int? defaultRegId;
+  int? stateid;
+  int? countryid;
 
   List<Countries> r2 = [];
   final ImagePicker _picker = ImagePicker();
@@ -89,16 +105,26 @@ class _UserAddressEditState extends State<UserAddressEdit> {
         i++;
       }
       if (widget.isUpdate == false) {
+        countryid = 165;
+
+        selectedValue = "Oman";
+        getRegionData(context, countryid);
+        setState(() {});
         clearAddressController();
       } else {
-        selectedValue = provider.selectedAddressCountry;
+        selectedValue = widget.selectedvalue;
         imageFile = widget.imageFile;
         imagePath = imageFile?.path;
         print("KKKKKKKKKKKKKKKKKKKKKK");
         print(imageFile?.name);
-        print(defaultReg);
+
         defaultReg = widget.defaultReg;
-        print(defaultReg);
+        defRegion = widget.defRegion;
+        countryid = widget.countryid;
+        defaultRegId = widget.defaultregid;
+        stateid = widget.stateid;
+        getRegionData(context, widget.countryid);
+        getStateData(context, widget.defaultregid);
 
         setState(() {});
       }
@@ -106,8 +132,13 @@ class _UserAddressEditState extends State<UserAddressEdit> {
       //   context,
       // );
       provider.clearRegions();
+      provider.clearStates();
       setState(() {});
     });
+  }
+
+  void openGoogleMaps(double latitude, double longitude) {
+    MapsLauncher.launchCoordinates(latitude, longitude);
   }
 
   @override
@@ -243,28 +274,55 @@ class _UserAddressEditState extends State<UserAddressEdit> {
                             const SizedBox(
                               height: 5,
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  provider.viewProfileModel?.userdetails
-                                          ?.firstname ??
-                                      '',
-                                  style: getBoldtStyle(
-                                      color: ColorManager.black, fontSize: 13),
-                                ),
-                                const SizedBox(
-                                  width: 2,
-                                ),
-                                Text(
-                                  provider.viewProfileModel?.userdetails
-                                          ?.lastname ??
-                                      '',
-                                  style: getBoldtStyle(
-                                      color: ColorManager.black, fontSize: 13),
-                                ),
-                              ],
-                            ),
+                            lang == 'ar'
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        provider.viewProfileModel?.userdetails
+                                                ?.lastname ??
+                                            '',
+                                        style: getBoldtStyle(
+                                            color: ColorManager.black,
+                                            fontSize: 13),
+                                      ),
+                                      const SizedBox(
+                                        width: 2,
+                                      ),
+                                      Text(
+                                        provider.viewProfileModel?.userdetails
+                                                ?.firstname ??
+                                            '',
+                                        style: getBoldtStyle(
+                                            color: ColorManager.black,
+                                            fontSize: 13),
+                                      ),
+                                    ],
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        provider.viewProfileModel?.userdetails
+                                                ?.firstname ??
+                                            '',
+                                        style: getBoldtStyle(
+                                            color: ColorManager.black,
+                                            fontSize: 13),
+                                      ),
+                                      const SizedBox(
+                                        width: 2,
+                                      ),
+                                      Text(
+                                        provider.viewProfileModel?.userdetails
+                                                ?.lastname ??
+                                            '',
+                                        style: getBoldtStyle(
+                                            color: ColorManager.black,
+                                            fontSize: 13),
+                                      ),
+                                    ],
+                                  ),
                             const SizedBox(
                               height: 2,
                             ),
@@ -301,60 +359,110 @@ class _UserAddressEditState extends State<UserAddressEdit> {
                                 ],
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 10, 0, 20),
-                              child: Stack(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
-                                    child: SizedBox(
-                                      height: 100,
-                                      width: size.width,
-                                      child: isLoading
-                                          ? Container(
-                                              height: 20,
-                                              color: ColorManager.whiteColor,
-                                              child: const Center(
-                                                  child:
-                                                      CircularProgressIndicator()))
-                                          : AddressImageWidget(
-                                              imagePath: imagePath),
+                            //****change */
+                            Row(
+                              children: [
+                                // Address Cover Photo
+                                Expanded(
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(0, 10, 5, 20),
+                                    child: Stack(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          child: SizedBox(
+                                            height: 100,
+                                            child: isLoading
+                                                ? Container(
+                                                    height: 20,
+                                                    color:
+                                                        ColorManager.whiteColor,
+                                                    child: const Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    ),
+                                                  )
+                                                : AddressImageWidget(
+                                                    imagePath: imagePath,
+                                                  ),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          right: 5,
+                                          top: 5,
+                                          child: InkWell(
+                                            onTap: () {
+                                              selectImage();
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey.shade300,
+                                                    spreadRadius: 1,
+                                                    blurRadius: 3,
+                                                  ),
+                                                ],
+                                              ),
+                                              child: const CircleAvatar(
+                                                radius: 16,
+                                                backgroundColor: Colors.white,
+                                                child: Icon(
+                                                  Icons.edit,
+                                                  size: 14,
+                                                  color: ColorManager.primary,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  Positioned(
-                                    right: 5,
-                                    top: 5,
-                                    child: InkWell(
-                                      onTap: () {
-                                        selectImage();
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.shade300,
-                                              spreadRadius: 1,
-                                              blurRadius: 3,
-                                              // offset: const Offset(2, 2.5),
-                                            ),
-                                          ],
-                                        ),
-                                        child: const CircleAvatar(
-                                          radius: 16,
-                                          backgroundColor: Colors.white,
-                                          child: Icon(
-                                            Icons.edit,
-                                            size: 14,
-                                            color: ColorManager.primary,
+                                ),
+                                // Google Map
+                                Expanded(
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(5, 10, 0, 20),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: SizedBox(
+                                        height: 100,
+                                        child: GoogleMap(
+                                          mapType: MapType.satellite,
+                                          myLocationEnabled: true,
+                                          initialCameraPosition: CameraPosition(
+                                            target: currentLocator,
+                                            zoom: 18.0,
                                           ),
+                                          markers: <Marker>{
+                                            Marker(
+                                              markerId: const MarkerId(
+                                                  'test_marker_id'),
+                                              position: currentLocator,
+                                              infoWindow: InfoWindow(
+                                                title: str.a_home_locator,
+                                                snippet: '*',
+                                              ),
+                                            ),
+                                          },
+                                          onTap: (_) {
+                                            openGoogleMaps(
+                                                currentLocator.latitude,
+                                                currentLocator.longitude);
+                                          },
                                         ),
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
+
                             Container(
                               height: 40,
                               width: size.width,
@@ -409,6 +517,11 @@ class _UserAddressEditState extends State<UserAddressEdit> {
                                               lot: s[1].toString(),
                                               imageFile: imageFile,
                                               defaultReg: defaultReg,
+                                              defRegion: defRegion,
+                                              selectedvalue: selectedValue,
+                                              countryid: countryid,
+                                              defaultregid: defaultRegId,
+                                              stateid: stateid,
                                             );
                                           }));
                                         },
@@ -445,34 +558,6 @@ class _UserAddressEditState extends State<UserAddressEdit> {
                                       ),
                                     )
                                   ],
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 15, 0, 14),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(5),
-                                child: SizedBox(
-                                  height: 100,
-                                  width: size.width,
-                                  child: GoogleMap(
-                                    myLocationEnabled: true,
-                                    initialCameraPosition: CameraPosition(
-                                      target: currentLocator,
-                                      zoom: 4.0,
-                                    ),
-                                    markers: <Marker>{
-                                      Marker(
-                                        markerId:
-                                            const MarkerId('test_marker_id'),
-                                        position: currentLocator,
-                                        infoWindow: InfoWindow(
-                                          title: str.a_home_locator,
-                                          snippet: '*',
-                                        ),
-                                      ),
-                                    },
-                                  ),
                                 ),
                               ),
                             ),
@@ -620,13 +705,19 @@ class _UserAddressEditState extends State<UserAddressEdit> {
                                           onChanged: (value) async {
                                             setState(() {
                                               selectedValue =
-                                                  value as Countries;
+                                                  value?.countryName as String;
+                                              countryid = value?.countryId;
                                             });
                                             provider.selectedAddressCountry =
                                                 value as Countries;
                                             defaultReg = null;
-                                            await getRegionData(context,
-                                                selectedValue?.countryId);
+
+                                            await getRegionData(
+                                              context,
+                                              countryid,
+                                            );
+                                            defRegion = null;
+                                            provider.clearStates();
                                             setState(() {});
                                           },
                                           buttonHeight: 40,
@@ -680,9 +771,9 @@ class _UserAddressEditState extends State<UserAddressEdit> {
                                                             const EdgeInsets
                                                                     .fromLTRB(
                                                                 10, 0, 10, 0),
-                                                        child: Text(selectedValue
-                                                                ?.countryName ??
-                                                            ''),
+                                                        child: Text(
+                                                            selectedValue ??
+                                                                ''),
                                                       ),
                                                     ),
                                                   ],
@@ -765,7 +856,17 @@ class _UserAddressEditState extends State<UserAddressEdit> {
                                                 defaultReg =
                                                     value?.cityName as String;
                                                 defaultRegId = value?.id as int;
+                                                defRegion = null;
                                               });
+                                              provider.clearStates();
+                                              print(
+                                                  "defaultReg==========================$defaultReg");
+                                              AddressEditControllers
+                                                  .regionController
+                                                  .text = defaultReg ?? '';
+                                              getStateData(
+                                                  context, defaultRegId);
+                                              setState(() {});
                                               // s(selectedValue);
                                             },
                                             buttonHeight: 50,
@@ -885,16 +986,189 @@ class _UserAddressEditState extends State<UserAddressEdit> {
                                             ),
                                           ],
                                         ),
-                                        child: TextField(
-                                          style: const TextStyle(),
-                                          controller: AddressEditControllers
-                                              .stateController,
-                                          decoration: InputDecoration(
-                                              hintText: str.ae_state_h,
-                                              hintStyle: getRegularStyle(
-                                                  color: const Color.fromARGB(
-                                                      255, 173, 173, 173),
-                                                  fontSize: 15)),
+                                        child: Container(
+                                          width: size.width * .44,
+                                          // height: mob ? 50 : 35,
+                                          decoration: BoxDecoration(
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  blurRadius: 10.0,
+                                                  color: Colors.grey.shade300,
+                                                  // offset: const Offset(5, 8.5),
+                                                ),
+                                              ],
+                                              color: ColorManager.whiteColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
+                                          child:
+                                              // TextField(
+                                              //   // style: const TextStyle(),
+                                              //   controller:
+                                              //       ServiceControllers
+                                              //           .stateController,
+                                              //   decoration: InputDecoration(
+                                              //       hintText:
+                                              //           str.s_state,
+                                              //       hintStyle: getRegularStyle(
+                                              //           color: const Color
+                                              //                   .fromARGB(
+                                              //               255,
+                                              //               173,
+                                              //               173,
+                                              //               173),
+                                              //           fontSize: Responsive
+                                              //                   .isMobile(
+                                              //                       context)
+                                              //               ? 15
+                                              //               : 10)),
+                                              // ),
+                                              DropdownButtonHideUnderline(
+                                            child: DropdownButton2<States>(
+                                              isExpanded: true,
+                                              // focusNode: nfocus,
+                                              icon: const Icon(
+                                                Icons.keyboard_arrow_down,
+                                                size: 35,
+                                                color: ColorManager.black,
+                                              ),
+                                              hint: provider.stateinfomodel
+                                                              ?.result ==
+                                                          false ||
+                                                      provider.stateinfomodel
+                                                              ?.result ==
+                                                          null
+                                                  ? Text(str.no_ava,
+                                                      style: getRegularStyle(
+                                                          color: const Color.fromARGB(
+                                                              255, 173, 173, 173),
+                                                          fontSize: 15))
+                                                  : Text(str.p_state_h,
+                                                      style: getRegularStyle(
+                                                          color: const Color.fromARGB(
+                                                              255, 173, 173, 173),
+                                                          fontSize: 15)),
+                                              items: provider
+                                                  .stateinfomodel?.states!
+                                                  .map((item) =>
+                                                      DropdownMenuItem<States>(
+                                                        value: item,
+                                                        child: Text(
+                                                            item.stateName ??
+                                                                '',
+                                                            style: getRegularStyle(
+                                                                color:
+                                                                    ColorManager
+                                                                        .black,
+                                                                fontSize: 15)),
+                                                      ))
+                                                  .toList(),
+                                              // value: defRegion,
+                                              onChanged: (value) {
+                                                print(provider
+                                                    .stateinfomodel?.result);
+                                                setState(() {
+                                                  defRegion = value?.stateName
+                                                      as String;
+                                                  stateid = value?.id;
+                                                });
+                                                AddressEditControllers
+                                                    .stateController
+                                                    .text = defRegion ?? '';
+                                                // s(selectedValue);
+                                              },
+                                              buttonHeight: 50,
+                                              dropdownMaxHeight:
+                                                  size.height * .6,
+                                              // buttonWidth: 140,
+                                              itemHeight: 40,
+                                              buttonPadding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      12, 0, 8, 0),
+                                              // dropdownWidth: size.width,
+                                              itemPadding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      12, 0, 12, 0),
+                                              // searchController:
+                                              //     AddressEditControllers
+                                              //         .searchController,
+                                              // searchInnerWidget: Padding(
+                                              //   padding:
+                                              //       const EdgeInsets.only(
+                                              //     top: 8,
+                                              //     bottom: 4,
+                                              //     right: 8,
+                                              //     left: 8,
+                                              //   ),
+                                              //   child: TextFormField(
+                                              //     controller:
+                                              //         AddressEditControllers
+                                              //             .searchController,
+                                              //     decoration: InputDecoration(
+                                              //       isDense: true,
+                                              //       contentPadding:
+                                              //           const EdgeInsets
+                                              //               .symmetric(
+                                              //         horizontal: 10,
+                                              //         vertical: 8,
+                                              //       ),
+                                              //       // TODO: localisation
+                                              //       hintText:
+                                              //           str.s_search_country,
+                                              //       hintStyle:
+                                              //           const TextStyle(
+                                              //               fontSize: 12),
+                                              //       border:
+                                              //           OutlineInputBorder(
+                                              //         borderRadius:
+                                              //             BorderRadius
+                                              //                 .circular(8),
+                                              //       ),
+                                              //     ),
+                                              //   ),
+                                              // ),
+                                              // searchMatchFn:
+                                              //     (item, searchValue) {
+                                              //   return (item.value
+                                              //       .toString()
+                                              //       .toLowerCase()
+                                              //       .contains(searchValue));
+                                              // },
+                                              customButton: defRegion == null
+                                                  ? null
+                                                  : Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .fromLTRB(
+                                                                  10,
+                                                                  15,
+                                                                  10,
+                                                                  15),
+                                                          child: Text(
+                                                              defRegion ?? '',
+                                                              style: getRegularStyle(
+                                                                  color:
+                                                                      ColorManager
+                                                                          .black,
+                                                                  fontSize:
+                                                                      12)),
+                                                        ),
+                                                      ],
+                                                    ),
+                                              //This to clear the search value when you close the menu
+                                              // onMenuStateChange: (isOpen) {
+                                              //   if (!isOpen) {
+                                              //     AddressEditControllers
+                                              //         .searchController
+                                              //         .clear();
+                                              //   }
+                                              // }
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -980,7 +1254,7 @@ class _UserAddressEditState extends State<UserAddressEdit> {
     final provider = Provider.of<DataProvider>(context, listen: false);
     final addressName = AddressEditControllers.addressNameController.text;
     final address = AddressEditControllers.addressController.text;
-    final country = selectedValue?.countryId;
+    final country = countryid;
     final region = AddressEditControllers.regionController.text;
     final state = AddressEditControllers.stateController.text;
     final flat = AddressEditControllers.flatNoController.text;
@@ -1021,9 +1295,9 @@ class _UserAddressEditState extends State<UserAddressEdit> {
     // log("addressCreateFun");
     final addressName = AddressEditControllers.addressNameController.text;
     final address = AddressEditControllers.addressController.text;
-    final country = selectedValue?.countryId;
+    final country = countryid;
     final region = defaultRegId.toString();
-    final state = AddressEditControllers.stateController.text;
+    final state = stateid;
     final flat = AddressEditControllers.flatNoController.text;
     final provider = Provider.of<DataProvider>(context, listen: false);
     final latitude = provider.addressLatitude;
@@ -1034,13 +1308,15 @@ class _UserAddressEditState extends State<UserAddressEdit> {
     var length = await imageFile!.length();
 
     try {
+      log(defaultReg.toString());
+      log(region.toString());
       var uri = Uri.parse(
           '$userAddressCreate?address_name=$addressName&address=$address&country_id=$country&state=$state&region=$region&home_no=$flat&latitude=$latitude&longitude=$longitude');
       var request = http.MultipartRequest(
         "POST",
         uri,
       );
-      print(uri);
+      print("uri================================$uri");
 
       request.headers.addAll(
           {"device-id": provider.deviceId ?? '', "api-token": apiToken});

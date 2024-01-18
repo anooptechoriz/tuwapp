@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "327206873471",
+    "project_id": "tuwapp-eb272",
+    "storage_bucket": "tuwapp-eb272.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:327206873471:android:b0f41c09aa6cef2e2f124a",
+        "android_client_info": {
+          "package_name": "com.tuwconnect.services"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8YN0Q1TDd80BzNNfldrV5FymbEsy3RTA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

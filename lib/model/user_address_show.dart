@@ -34,8 +34,10 @@ class UserAddress {
   String? address;
   int? countryId;
   String? region;
+  String? city;
   int? regionId;
   String? state;
+  String? stateid;
   String? homeNo;
   String? createdAt;
   String? updatedAt;
@@ -51,8 +53,10 @@ class UserAddress {
       this.address,
       this.countryId,
       this.region,
+      this.city,
       this.regionId,
       this.state,
+      this.stateid,
       this.homeNo,
       this.createdAt,
       this.updatedAt,
@@ -68,8 +72,10 @@ class UserAddress {
     address = json['address'];
     countryId = json['country_id'];
     region = json['region'];
+    city = json['city_name'];
     regionId = json['region_id'];
-    state = json['state'];
+    state = json['state_name'];
+    stateid = json['state'];
     homeNo = json['home_no'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
@@ -87,8 +93,10 @@ class UserAddress {
     data['address'] = address;
     data['country_id'] = countryId;
     data['region'] = region;
+    data['city_name'] = city;
     data['region_id'] = regionId;
-    data['state'] = state;
+    data['state_name'] = state;
+    data['state'] = stateid;
     data['home_no'] = homeNo;
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;

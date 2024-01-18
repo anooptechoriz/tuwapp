@@ -96,6 +96,7 @@ class _SelectLocationFromAppState extends State<SelectLocationFromApp> {
           alignment: AlignmentDirectional.bottomCenter,
           children: [
             GoogleMap(
+              mapType: MapType.satellite,
               myLocationEnabled: true,
               buildingsEnabled: true,
 
@@ -113,7 +114,7 @@ class _SelectLocationFromAppState extends State<SelectLocationFromApp> {
 
               initialCameraPosition: CameraPosition(
                 target: currentLocator!,
-                zoom: 11.0,
+                zoom: 18.0,
               ),
               markers: <Marker>{
                 Marker(

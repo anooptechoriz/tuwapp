@@ -57,7 +57,7 @@ class _PopupImageState extends State<PopupImage> {
                 //   ),
                 // ),
                 imageUrl: widget.chatImage ?? "$endPoint${widget.image}",
-                fit: BoxFit.cover,
+                fit: BoxFit.fitWidth,
                 // cacheManager: customCacheManager,
               ),
             ),

@@ -71,6 +71,7 @@
     "c_service_group":"مجموعة الخدمات",
     "c_service_group_h":"إختر المجموعة",
     "c_service_list":"قائمة الخدمات",
+    "c_service_list_h1":"أدخل القائمة",
     "c_service_list_h":"قائمة الخدمات",
     "c_vehicle":"صورة من ملكية المركبة/ صورة من السجل التجاري",
     "c_browse":"إرفاق",
@@ -122,9 +123,10 @@
     "pp_favourites":"المفضلة",
     "pp_address":"دفتر العناوين",
     "pp_settings":"اعدادات اللغة",
-       "pp_settings1": "إعدادات الملف الشخصي",
+    "pp_settings1": "إعدادات الملف الشخصي",
     "pp_my_Services":"خدماتي",
     "pp_my_sub":"إشتراكاتي",
+    "pp_no_sub":"لا يوجد اشتراك متاح",
 
     "w_wishList":"المفضلة",
 
@@ -137,6 +139,7 @@
     "su_time":"الوقت",
     "su_service_fee":"رسوم الخدمة",
     "su_discount":"الخصم",
+    "su_offerprice":"سعر العرض",
     "su_vat":"الضريبة",
     "su_mobile":"رقم الهاتف",
     "su_exp":"تاريخ الإنتهاء",
@@ -236,13 +239,17 @@
     "snack_get_location":"...الموقع الحالي قيد التوفير",
     "snack_done":"تم بنجاح",
     "snack_choose_group":"يرجى اختيار نوع الخدمة",
-    "snack_upload":"يرجى رفع الملف",
+    "snack_upload":"الرجاء اختيار خدمة فرعية",
+    "snack_upload_file":"يرجى تحميل ملف",
     "snack_no_address":"الموقع غير متاح",
     "snack_phone_digits":"يجب ان لا يقل رقم الهاتف عن 8 أرقام",
     "snack_enable_loc":"تأكيد الموقع لإتاحة الوصول",
     "snack_message_sent":"لا يمكن ارسال الرسالة في الوقت الحالي",
+    "snack_customer_report":"تم الإبلاغ عن العميل بنجاح",
+    "snack_package":"لا توجد حزمة اشتراك متاحة ضمن هذه الخدمات. الرجاء اختيار خدمة أخرى",
 
     "gm_new_location":"قم بتأكيد الموقع الجديد",
+    "gm_choose_location":"اختيار موقع",
     "gm_search":"البحث في خرائط جوجل",
     "gm_search_servicer":"البحث عن الخدمة في هذا الموق",
 
@@ -253,6 +260,7 @@
     "di_delete":"احذف حقل العنوان",
     "di_delete2":"هل انت متأكد بأنك تريد",
     "di_delete3":" الحذف؟",
+    "di_deleteimg":"حذف صورة!",
     "di_dont":"لا اريد ذالك",
     "di_allow":"السماح",
 
@@ -270,7 +278,7 @@
     "re_comment":"اكتب تعليق للمتابعة",
     "re_comment2":"التعليق",
     "re_report_user":"أبلغ عن مستخدم",
-    "re_bother":"هل هذا الشخص يزعجك؟?",
+    "re_bother":"هل هذا الشخص يزعجك؟",
     "re_tell_us":"قم بتزويدنا بتفاصيل الشكوى.",
     "re_report_success":"تمت عملية تقديم الشكوى بنجاح",
 
@@ -309,9 +317,11 @@
   "proceed": "استمرار",
   "explore":"استكشف",
   "choose": "اختيار",
+  "yesterday":"أمس",
 
    "back": "العودة",
   "hello": "مرحبًا",
+  "open_google_map":"افتح خريطة جوجل",
 
   "delete_account":"حذف الحساب",
 

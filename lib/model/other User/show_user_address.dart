@@ -31,6 +31,7 @@ class UserAddress {
   String? address;
   int? countryId;
   String? region;
+  String? city;
   String? image;
   String? state;
   String? homeNo;
@@ -47,6 +48,7 @@ class UserAddress {
       this.address,
       this.countryId,
       this.region,
+      this.city,
       this.image,
       this.state,
       this.homeNo,
@@ -63,8 +65,9 @@ class UserAddress {
     address = json['address'];
     countryId = json['country_id'];
     region = json['region'];
+    city = json['city_name'];
     image = json['image'];
-    state = json['state'];
+    state = json['state_name'];
     homeNo = json['home_no'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
@@ -81,8 +84,9 @@ class UserAddress {
     data['address'] = address;
     data['country_id'] = countryId;
     data['region'] = region;
+    data['city_name'] = city;
     data['image'] = image;
-    data['state'] = state;
+    data['state_name'] = state;
     data['home_no'] = homeNo;
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;

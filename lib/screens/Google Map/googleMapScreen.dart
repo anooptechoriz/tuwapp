@@ -77,6 +77,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
           alignment: AlignmentDirectional.bottomCenter,
           children: [
             GoogleMap(
+              mapType: MapType.satellite,
               myLocationEnabled: true, buildingsEnabled: true,
               // tiltGesturesEnabled: true,
               // compassEnabled: true,
@@ -93,7 +94,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
 
               initialCameraPosition: CameraPosition(
                 target: currentLocator!,
-                zoom: 11.0,
+                zoom: 18.0,
               ),
               markers: <Marker>{
                 Marker(

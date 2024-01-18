@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,7 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:page_transition/page_transition.dart';
+import 'package:maps_launcher/maps_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_services/API/address/getUserAddress.dart';
 import 'package:social_media_services/API/endpoint.dart';
@@ -19,7 +21,6 @@ import 'package:social_media_services/components/assets_manager.dart';
 import 'package:social_media_services/components/color_manager.dart';
 import 'package:social_media_services/components/styles_manager.dart';
 import 'package:social_media_services/responsive/responsive_width.dart';
-import 'package:social_media_services/screens/Google%20Map/view_location.dart';
 import 'package:social_media_services/screens/messagePage.dart';
 import 'package:social_media_services/screens/serviceHome.dart';
 import 'package:social_media_services/widgets/AddressBox/user_address_box.dart';
@@ -64,9 +65,14 @@ class _UserAddressCardState extends State<UserAddressCard> {
         'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
     // if (await launchUrl(Uri.parse(url))) {
     await launchUrl(Uri.parse(url));
+    log(url);
     // } else {
     // throw 'Could not launch $url';
     // }
+  }
+
+  void openGoogleMaps(double latitude, double longitude) {
+    MapsLauncher.launchCoordinates(latitude, longitude);
   }
 
   @override
@@ -78,14 +84,18 @@ class _UserAddressCardState extends State<UserAddressCard> {
     // final userAddress = provider.pUserAddressShow?.userAddress;
     final userprofile = provider.otherUserProfile?.userdetails;
     final userAddressData = provider.pUserAddressShow?.userAddress;
+    log("latitude=====${provider.addressLatitude}");
+    log("longitude====${provider.addressLongitude}");
+    log("latitude1=====${userAddressData?.latitude.toString()}");
+    log("longitude1====${provider.addressLongitude}");
     final w = MediaQuery.of(context).size.width;
     final mobWth = ResponsiveWidth.isMobile(context);
     final smobWth = ResponsiveWidth.issMobile(context);
     final homeLocation =
-        "${userAddressData?.country} | ${userAddressData?.state}";
+        "${userAddressData?.country} | ${userAddressData?.state ?? userAddressData?.city}";
     final currentLocator = LatLng(
-        provider.addressLatitude ?? double.parse('41.612849'),
-        provider.addressLongitude ?? double.parse('13.046816'));
+        double.parse(userAddressData?.latitude ?? '41.612849'),
+        double.parse(userAddressData?.longitude ?? '13.046816'));
     //  LatLng(
     // double.parse(userAddressData?.latitude ??  '41.612849'),
     // double.parse(userAddressData?.longitude ?? '13.046816'));
@@ -202,24 +212,47 @@ class _UserAddressCardState extends State<UserAddressCard> {
                           const SizedBox(
                             height: 5,
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                userprofile?.firstname ?? '',
-                                style: getBoldtStyle(
-                                    color: ColorManager.black, fontSize: 13),
-                              ),
-                              const SizedBox(
-                                width: 2,
-                              ),
-                              Text(
-                                userprofile?.lastname ?? '',
-                                style: getBoldtStyle(
-                                    color: ColorManager.black, fontSize: 13),
-                              ),
-                            ],
-                          ),
+                          lang == 'ar'
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      userprofile?.lastname ?? '',
+                                      style: getBoldtStyle(
+                                          color: ColorManager.black,
+                                          fontSize: 13),
+                                    ),
+                                    const SizedBox(
+                                      width: 2,
+                                    ),
+                                    Text(
+                                      userprofile?.firstname ?? '',
+                                      style: getBoldtStyle(
+                                          color: ColorManager.black,
+                                          fontSize: 13),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      userprofile?.firstname ?? '',
+                                      style: getBoldtStyle(
+                                          color: ColorManager.black,
+                                          fontSize: 13),
+                                    ),
+                                    const SizedBox(
+                                      width: 2,
+                                    ),
+                                    Text(
+                                      userprofile?.lastname ?? '',
+                                      style: getBoldtStyle(
+                                          color: ColorManager.black,
+                                          fontSize: 13),
+                                    ),
+                                  ],
+                                ),
                           const SizedBox(
                             height: 2,
                           ),
@@ -236,28 +269,31 @@ class _UserAddressCardState extends State<UserAddressCard> {
                             style: getRegularStyle(
                                 color: ColorManager.grayLight, fontSize: 13),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 10, 0, 20),
-                            child: Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: SizedBox(
-                                    height: 100,
-                                    width: size.width,
-                                    child: isLoading
-                                        ? Container(
-                                            height: 20,
-                                            color: ColorManager.whiteColor,
-                                            child: const Center(
-                                                child:
-                                                    CircularProgressIndicator()))
-                                        : CoverImageWidget(
-                                            userDetail: userprofile),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          // Padding(
+                          //   padding: const EdgeInsets.fromLTRB(0, 10, 0, 20),
+                          //   child: Stack(
+                          //     children: [
+                          //       ClipRRect(
+                          //         borderRadius: BorderRadius.circular(5),
+                          //         child: SizedBox(
+                          //           height: 100,
+                          //           width: size.width,
+                          //           child: isLoading
+                          //               ? Container(
+                          //                   height: 20,
+                          //                   color: ColorManager.whiteColor,
+                          //                   child: const Center(
+                          //                       child:
+                          //                           CircularProgressIndicator()))
+                          //               : CoverImageWidget(
+                          //                   userDetail: userprofile),
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
+                          SizedBox(
+                            height: 25,
                           ),
                           Container(
                             height: 40,
@@ -295,24 +331,32 @@ class _UserAddressCardState extends State<UserAddressCard> {
                                 height: 150,
                                 width: size.width,
                                 child: GoogleMap(
+                                  mapType: MapType.satellite,
                                   myLocationEnabled: true,
                                   initialCameraPosition: CameraPosition(
                                     target: currentLocator,
-                                    zoom: 4.0,
+                                    zoom: 8.0,
                                   ),
                                   onTap: (argument) {
-                                    Navigator.push(
-                                        context,
-                                        PageTransition(
-                                            type:
-                                                PageTransitionType.rightToLeft,
-                                            child: ViewLocationScreen(
-                                                latitude:
-                                                    userAddressData?.latitude ??
-                                                        '',
-                                                longitude: userAddressData
-                                                        ?.longitude ??
-                                                    '')));
+                                    openGoogleMaps(
+                                        double.parse(
+                                            userAddressData?.latitude ?? ''),
+                                        double.parse(
+                                            userAddressData?.longitude ?? ''));
+
+                                    //previous
+                                    // Navigator.push(
+                                    //     context,
+                                    //     PageTransition(
+                                    //         type:
+                                    //             PageTransitionType.rightToLeft,
+                                    //         child: ViewLocationScreen(
+                                    //             latitude:
+                                    //                 userAddressData?.latitude ??
+                                    //                     '',
+                                    //             longitude: userAddressData
+                                    //                     ?.longitude ??
+                                    //                 '')));
                                   },
                                   markers: <Marker>{
                                     Marker(
@@ -337,7 +381,7 @@ class _UserAddressCardState extends State<UserAddressCard> {
                             height: 25,
                             child: InkWell(
                               onTap: () async {
-                                _openGoogleMaps(
+                                openGoogleMaps(
                                     double.parse(
                                         userAddressData?.latitude ?? ''),
                                     double.parse(
@@ -397,16 +441,21 @@ class _UserAddressCardState extends State<UserAddressCard> {
                           // )
                           InkWell(
                             onTap: () {
-                              Navigator.push(
-                                  context,
-                                  PageTransition(
-                                      type: PageTransitionType.rightToLeft,
-                                      child: ViewLocationScreen(
-                                          latitude:
-                                              userAddressData?.latitude ?? '',
-                                          longitude:
-                                              userAddressData?.longitude ??
-                                                  '')));
+                              openGoogleMaps(
+                                double.parse(userAddressData?.latitude ?? ''),
+                                double.parse(userAddressData?.longitude ?? ''),
+                              );
+                              //**Pevious
+                              // Navigator.push(
+                              //     context,
+                              //     PageTransition(
+                              //         type: PageTransitionType.rightToLeft,
+                              //         child: ViewLocationScreen(
+                              //             latitude:
+                              //                 userAddressData?.latitude ?? '',
+                              //             longitude:
+                              //                 userAddressData?.longitude ??
+                              //                     '')));
                             },
                             child: UserAddressBox(
                               userAddress: userAddressData,

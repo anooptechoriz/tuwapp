@@ -24,6 +24,8 @@ import 'package:social_media_services/widgets/chat/chat_list_tile.dart';
 import 'package:social_media_services/widgets/custom_drawer.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../widgets/backbutton.dart';
+
 class MessagePage extends StatefulWidget {
   final bool isHome;
   final bool isOther;
@@ -40,6 +42,7 @@ class _MessagePageState extends State<MessagePage> {
   late Timer timer;
   String? time;
   String? apiToken;
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   void initState() {
     super.initState();
@@ -73,15 +76,21 @@ class _MessagePageState extends State<MessagePage> {
     log("Dispose");
   }
 
-  Future<bool> _willPopCallback() async {
-    widget.isOther
-        ? Navigator.pop(context)
-        : Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) {
-            return const HomePage(
-              selectedIndex: 0,
-            );
-          }));
-    return true; // return true if the route to be popped
+  Future<bool> handleBackButton() async {
+    if (_scaffoldKey.currentState!.isEndDrawerOpen) {
+      // If the drawer is open, close it
+      _scaffoldKey.currentState!.closeEndDrawer();
+      return false; // Do not exit the app
+    } else {
+      // If the drawer is not open, exit the app
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) {
+        return const HomePage(
+          selectedIndex: 0,
+        );
+      }));
+
+      return true;
+    }
   }
 
   int _selectedIndex = 1;
@@ -99,11 +108,33 @@ class _MessagePageState extends State<MessagePage> {
 
     return WillPopScope(
       onWillPop: () async {
-        return _willPopCallback();
+        return handleBackButton();
       },
       child: apiToken == null
           ? Scaffold()
           : Scaffold(
+              key: _scaffoldKey,
+              appBar: PreferredSize(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                    child: Row(
+                      children: [
+                        BackButton1(),
+                        Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CircleAvatar(
+                              backgroundColor: Color(0xff08dc2c),
+                              child: Image.asset(
+                                'assets/logo/app-logo-T.jpg',
+                                height: 30,
+                                width: 30,
+                              )),
+                        )
+                      ],
+                    ),
+                  ),
+                  preferredSize: Size(100, 150)),
               drawerEnableOpenDragGesture: false,
               endDrawer: SizedBox(
                 height: size.height * 0.825,
@@ -317,30 +348,31 @@ class _MessagePageState extends State<MessagePage> {
                           final profileDetails = provider
                               .chatListDetails?.chatMessage?.data?[index];
 
-                          var dtime = DateFormat("HH:mm").parse(
-                              profileDetails?.createdAt?.substring(11, 16) ??
-                                  '',
-                              true);
+                          // var dtime = DateFormat("HH:mm").parse(
+                          //     profileDetails?.createdAt?.substring(11, 16) ??
+                          //         '',
+                          //     true);
 
-                          var date = DateFormat("yyyy-MM-dd").parse(
-                              profileDetails?.createdAt?.substring(0, 10) ?? '',
-                              true);
-                          String localDate =
-                              DateFormat.yMd('es').format(date.toLocal());
+                          // var date = DateFormat("yyyy-MM-dd").parse(
+                          //     profileDetails?.createdAt?.substring(0, 10) ?? '',
+                          //     true);
+                          // String localDate =
+                          //     DateFormat.yMd('es').format(date.toLocal());
 
-                          var hour = dtime.toLocal().hour;
-                          var minute = dtime.toLocal().minute;
+                          // var hour = dtime.toLocal().hour;
+                          // var minute = dtime.toLocal().minute;
 
-                          var day = date.toLocal().weekday;
-                          if (DateTime.now().weekday == day) {
-                            String time24 = "$hour:$minute";
-                            time = DateFormat.jm()
-                                .format(DateFormat("hh:mm").parse(time24));
-                          } else if (day == DateTime.now().weekday - 1) {
-                            time = "Yesterday";
-                          } else {
-                            time = localDate;
-                          }
+                          // var day = date.toLocal().weekday;
+                          // if (DateTime.now().weekday == day) {
+                          //   String time24 = "$hour:$minute";
+                          //   time = DateFormat.jm('en_US')
+                          //       .format(DateFormat("hh:mm").parse(time24));
+                          // } else if (day == DateTime.now().weekday - 1) {
+                          //   time = "Yesterday";
+                          // } else {
+                          //   time = DateFormat.jm('en_US')
+                          //       .format(DateTime.parse(localDate.toString()));
+                          // }
 
                           return Padding(
                             padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
@@ -349,9 +381,8 @@ class _MessagePageState extends State<MessagePage> {
                                 navToChatLoadingScreen(index);
                               },
                               child: ChatListTile(
-                                profileData: profileDetails,
-                                time: time,
-                              ),
+                                  profileData: profileDetails,
+                                  time: _formatTime(profileDetails?.createdAt)),
                             ),
                           );
                         }),
@@ -378,5 +409,47 @@ class _MessagePageState extends State<MessagePage> {
         serviceManId: serviceManId.toString(),
       );
     }));
+  }
+
+  String _formatTime(String? createdAt) {
+    if (createdAt == null) return '';
+    final str = AppLocalizations.of(context)!;
+    var dtime = DateFormat("HH:mm").parse(createdAt.substring(11, 16), true);
+    var date = DateFormat("yyyy-MM-dd").parse(createdAt.substring(0, 10), true);
+
+    // Assuming the server provides time in UTC, convert it to local time
+    var utc =
+        DateTime.utc(date.year, date.month, date.day, dtime.hour, dtime.minute);
+    var localTime = utc.toLocal();
+
+    var hour = localTime.hour;
+    var minute = localTime.minute;
+    var locale = lang == 'ar'
+        ? 'ar'
+        : lang == 'hi'
+            ? 'hi'
+            : 'en_us';
+    var day = localTime.weekday;
+
+    String formattedTime = '';
+    if (DateTime.now().weekday == day) {
+      formattedTime = DateFormat.jm(locale).format(localTime);
+    } else if (day == DateTime.now().weekday - 1) {
+      formattedTime = str.yesterday;
+    } else {
+      formattedTime = DateFormat.jm(locale).format(localTime);
+    }
+
+    // Check for Arabic language
+    // if (lang == 'ar') {
+    //   // Use the intl package for Arabic localization
+    //   var format = DateFormat.jm('ar');
+    //   formattedTime = format.format(localTime);
+    // } else if (lang == 'hi') {
+    //   var format = DateFormat.jm('hi');
+    //   formattedTime = format.format(localTime);
+    // }
+
+    return formattedTime;
   }
 }

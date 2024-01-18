@@ -14,6 +14,7 @@ import 'package:social_media_services/providers/data_provider.dart';
 
 getUserAddress(BuildContext context) async {
   print('getting user address');
+  log("sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss");
   //  final otpProvider = Provider.of<OTPProvider>(context, listen: false);
   final provider = Provider.of<DataProvider>(context, listen: false);
   final apiToken = Hive.box("token").get('api_token');
@@ -39,6 +40,8 @@ getUserAddress(BuildContext context) async {
       final userAddressData = UserAddressShow.fromJson(jsonResponse);
       provider.getUserAddressData(userAddressData);
       print(jsonResponse);
+      print(
+          "ttttttttttttttttttttttttttttttttttttttt${userAddressData.userAddress.toString()}");
     } else {
       // print(response.statusCode);
       // print(response.body);

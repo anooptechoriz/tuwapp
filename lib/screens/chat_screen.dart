@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 
 import 'package:hive/hive.dart';
@@ -61,7 +62,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool isAddressCardSelected = false;
   bool isRecordingOn = false;
   bool isVibrantFeatureAvailable = false;
-  bool isScrolling = false;
+  bool isScrolling = true;
 
   List<ChatData>? chatMessages = [];
   final ScrollController _scrollController = ScrollController();
@@ -121,12 +122,16 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     _scrollController.addListener(() async {
       setState(() {
-        isScrolling = true;
+        isScrolling = false;
       });
-      if (_scrollController.position.atEdge &&
-          _scrollController.offset != 0.0) {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
         setState(() {
           isScrolling = false;
+        });
+      } else if (_scrollController.position.pixels == 0.0) {
+        setState(() {
+          isScrolling = true;
         });
       }
     });
@@ -253,11 +258,19 @@ class _ChatScreenState extends State<ChatScreen> {
                             },
                             child: Column(
                               children: [
-                                Text(
-                                  " ${provider.serviceManDetails?.userData?.firstname ?? provider.serviceManDetails?.userData?.phone} ${provider.serviceManDetails?.userData?.lastname ?? ''}",
-                                  style: getRegularStyle(
-                                      color: ColorManager.black, fontSize: 16),
-                                ),
+                                lang == 'ar'
+                                    ? Text(
+                                        " ${provider.serviceManDetails?.userData?.lastname ?? ''} ${provider.serviceManDetails?.userData?.firstname ?? provider.serviceManDetails?.userData?.phone}",
+                                        style: getRegularStyle(
+                                            color: ColorManager.black,
+                                            fontSize: 16),
+                                      )
+                                    : Text(
+                                        " ${provider.serviceManDetails?.userData?.firstname ?? provider.serviceManDetails?.userData?.phone} ${provider.serviceManDetails?.userData?.lastname ?? ''}",
+                                        style: getRegularStyle(
+                                            color: ColorManager.black,
+                                            fontSize: 16),
+                                      ),
                               ],
                             ),
                           ),
@@ -300,11 +313,18 @@ class _ChatScreenState extends State<ChatScreen> {
                     final status = chatData?.data?[index].status;
 
                     final len = chatData?.data?.length;
+                    var locale = 'en';
+                    if (lang == 'ar') {
+                      locale = 'ar';
+                    } else if (lang == 'hi') {
+                      locale = 'hi';
+                    }
                     var date = DateFormat("yyyy-MM-dd").parse(
                         chatData?.data?[index].createdAt?.substring(0, 10) ??
                             '',
                         true);
-                    String localDate = DateFormat.yMEd().format(date.toLocal());
+                    String localDate =
+                        DateFormat.yMEd(locale).format(date.toLocal());
 
                     return Column(
                       children: [
@@ -870,8 +890,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ))
                 : Container(),
-            isScrolling
-                ? Positioned(
+            isScrolling == true
+                ? Container()
+                : Positioned(
                     left: lang == 'ar' ? 5 : null,
                     right: lang != 'ar' ? 5 : null,
                     bottom: 70,
@@ -899,7 +920,6 @@ class _ChatScreenState extends State<ChatScreen> {
                             )),
                       ),
                     ))
-                : Container()
           ],
         ),
       ),
@@ -915,23 +935,46 @@ class _ChatScreenState extends State<ChatScreen> {
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
       );
-      print(pickedFile);
-      final list = [pickedFile!];
 
-      await uploadImages(list);
-      await viewChatMessages(context, servicerProvider.servicerId);
-      final provider = Provider.of<DataProvider>(context, listen: false);
-      chatMessages = provider.viewChatMessageModel?.chatMessage?.data;
+      if (pickedFile != null) {
+        // Compress the image before uploading
+        final compressedImageBytes =
+            await FlutterImageCompress.compressWithList(
+          await pickedFile.readAsBytes(),
+          quality: 85, // Adjust quality as needed
+        );
 
-      setState(() {});
+        // Upload the compressed image
+        await uploadCompressedImage(compressedImageBytes);
+
+        await viewChatMessages(context, servicerProvider.servicerId);
+        final provider = Provider.of<DataProvider>(context, listen: false);
+        chatMessages = provider.viewChatMessageModel?.chatMessage?.data;
+
+        setState(() {});
+      }
     } catch (e) {
+      print('Error: $e');
       setState(() {});
     }
   }
 
+  Future<void> uploadCompressedImage(List<int> compressedImageBytes) async {
+    final tempDir = await getTemporaryDirectory();
+    // Create a temporary file
+    final tempFile = await File('${tempDir.path}/temp_image.jpg')
+        .writeAsBytes(compressedImageBytes);
+
+    // Convert the temporary file to an XFile
+    final compressedFile = XFile(tempFile.path);
+
+    // Upload the compressed image
+    await uploadImages([compressedFile]);
+  }
+
   pickDoc() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
-      // type: FileType.custom,
+      type: FileType.any,
       allowMultiple: true,
       // allowedExtensions: ['pdf', 'txt', 'wav', 'doc'],
     );

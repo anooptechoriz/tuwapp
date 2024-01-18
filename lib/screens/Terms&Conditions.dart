@@ -43,11 +43,31 @@ class _TermsAndConditionPageState extends State<TermsAndConditionPage> {
   Widget build(BuildContext context) {
     final str = AppLocalizations.of(context)!;
     return Scaffold(
+      appBar: PreferredSize(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 30),
+            child: Row(
+              children: [
+                BackButton2(),
+                Spacer(),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CircleAvatar(
+                      backgroundColor: Color(0xff08dc2c),
+                      child: Image.asset(
+                        'assets/logo/app-logo-T.jpg',
+                        height: 30,
+                        width: 30,
+                      )),
+                )
+              ],
+            ),
+          ),
+          preferredSize: Size(100, 150)),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Stack(
             children: [
-              BackButton2(),
               Column(
                 children: [
                   Padding(

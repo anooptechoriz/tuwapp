@@ -4,7 +4,9 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_windows
+  firebase_core
   geolocator_windows
+  maps_launcher
   network_info_plus
   permission_handler_windows
   platform_device_id_windows

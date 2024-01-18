@@ -16,6 +16,7 @@ getServiceMan(BuildContext context, id, homeservice) async {
   //  final otpProvider = Provider.of<OTPProvider>(context, listen: false);
   final provider = Provider.of<DataProvider>(context, listen: false);
   final userDetails = provider.viewProfileModel?.userdetails;
+  final String lanId = Hive.box("LocalLan").get('lang_id');
   // provider.subServicesModel = null;
   String? apiToken = Hive.box("token").get('api_token');
   // if (apiToken == null) return;
@@ -25,7 +26,7 @@ getServiceMan(BuildContext context, id, homeservice) async {
   try {
     var response = await http.post(
         Uri.parse(
-            '$servicemanList?service_id=$id&page=1&latitude=${userDetails?.latitude ?? provider.explorerLat}&longitude=${userDetails?.longitude ?? provider.explorerLong}'),
+            '$servicemanList?service_id=$id&page=1&latitude=${userDetails?.latitude ?? provider.explorerLat}&longitude=${userDetails?.longitude ?? provider.explorerLong}&language_id=${lanId}'),
         headers: {"device-id": provider.deviceId ?? '', "api-token": apiToken});
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
@@ -53,6 +54,7 @@ getServiceMan(BuildContext context, id, homeservice) async {
 
 searchServiceMan(
     BuildContext context, id, countryId, state, region, name, transport) async {
+  final String lanId = Hive.box("LocalLan").get('lang_id');
   final servicerProvider =
       Provider.of<ServicerProvider>(context, listen: false);
   final provider = Provider.of<DataProvider>(context, listen: false);
@@ -66,8 +68,8 @@ searchServiceMan(
   }
   try {
     final url =
-        '$servicemanList?service_id=$id&page=1&latitude=${servicerProvider.servicerLatitude ?? userDetails?.latitude ?? provider.explorerLat}&longitude=${servicerProvider.servicerLatitude ?? userDetails?.longitude ?? provider.explorerLong}&sel_country_id=${countryId ?? ''}&sel_state=${state ?? ''}&sel_region=${region ?? ''}&sel_name=${name ?? ''}&sel_transport=${transport ?? ''}';
-    print(url);
+        '$servicemanList?service_id=$id&page=1&latitude=${servicerProvider.servicerLatitude ?? userDetails?.latitude ?? provider.explorerLat}&longitude=${servicerProvider.servicerLatitude ?? userDetails?.longitude ?? provider.explorerLong}&sel_country_id=${countryId ?? ''}&sel_state=${state ?? ''}&sel_region=${region ?? ''}&sel_name=${name ?? ''}&sel_transport=${transport ?? ''}&language_id=${lanId}';
+    log(url);
     var response = await http.post(Uri.parse(url),
         headers: {"device-id": provider.deviceId ?? '', "api-token": apiToken});
     if (response.statusCode == 200) {

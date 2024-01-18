@@ -54,6 +54,7 @@ const String updateReadStatusApi = "$api/update/read-status";
 
 const String reportCustomerApi = "$api/report-customer";
 
-const String getRegionApi = "$api/getregions?country_id=";
+const String getRegionApi = "$api/getregions";
 
-const String getStateApi = "$api/getState?city_id=";
+const String getStateApi = "$api/getstate";
+const String updateuserlanguage = "$api/update-user-language?language_id=";

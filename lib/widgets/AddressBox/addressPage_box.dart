@@ -3,7 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:page_transition/page_transition.dart';
+import 'package:maps_launcher/maps_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_services/API/endpoint.dart';
 import 'package:social_media_services/components/color_manager.dart';
@@ -13,7 +13,6 @@ import 'package:social_media_services/model/user_address_show.dart';
 import 'package:social_media_services/providers/data_provider.dart';
 
 import 'package:social_media_services/screens/Address%20page/address_update.dart';
-import 'package:social_media_services/screens/Google%20Map/view_location.dart';
 import 'package:social_media_services/utils/diologue.dart';
 
 class AddressBox extends StatefulWidget {
@@ -35,20 +34,36 @@ class _AddressBoxState extends State<AddressBox> {
     );
   }
 
+  void openGoogleMaps(double latitude, double longitude) {
+    MapsLauncher.launchCoordinates(latitude, longitude);
+  }
+
   @override
   Widget build(BuildContext context) {
+    String capitalizeFirstLetter(String text) {
+      if (text.isEmpty) {
+        return text;
+      }
+      return text[0].toUpperCase() + text.substring(1);
+    }
+
+    print(
+        "city==========================${widget.userAddress?.city.toString()}");
     final size = MediaQuery.of(context).size;
     final provider = Provider.of<DataProvider>(context, listen: false);
     return InkWell(
       onTap: () {
-        Navigator.push(
-            context,
-            PageTransition(
-              type: PageTransitionType.rightToLeft,
-              child: ViewLocationScreen(
-                  latitude: widget.userAddress?.latitude,
-                  longitude: widget.userAddress?.longitude),
-            ));
+        openGoogleMaps(double.parse(widget.userAddress?.latitude),
+            double.parse(widget.userAddress?.longitude));
+        //previous
+        // Navigator.push(
+        //     context,
+        //     PageTransition(
+        //       type: PageTransitionType.rightToLeft,
+        //       child: ViewLocationScreen(
+        //           latitude: widget.userAddress?.latitude,
+        //           longitude: widget.userAddress?.longitude),
+        //     ));
       },
       child: Padding(
         padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
@@ -73,7 +88,7 @@ class _AddressBoxState extends State<AddressBox> {
                 children: [
                   CachedNetworkImage(
                     imageUrl: "$endPoint${widget.userAddress?.image}",
-                    height: 200,
+                    height: 225,
                     imageBuilder: (context, imageProvider) {
                       return Container(
                         // width: 25,
@@ -100,7 +115,8 @@ class _AddressBoxState extends State<AddressBox> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.userAddress?.addressName ?? "",
+                            capitalizeFirstLetter(
+                                widget.userAddress?.addressName ?? ""),
                             style: getRegularStyle(
                               color: ColorManager.whiteColor,
                               fontSize: 18,
@@ -124,13 +140,43 @@ class _AddressBoxState extends State<AddressBox> {
                                     fontSize: 16,
                                   ),
                                 ),
-                          Text(
-                            "${widget.userAddress?.region}, ${widget.userAddress?.state ?? ''}, ${widget.userAddress?.country}",
-                            style: getRegularStyle(
-                              color: ColorManager.whiteColor,
-                              fontSize: 16,
+                          Container(
+                            width: size.width / 1.12,
+                            child: RichText(
+                              maxLines: 2, // Set the maximum number of lines
+                              overflow: TextOverflow.ellipsis,
+                              text: TextSpan(
+                                style: getRegularStyle(
+                                  color: ColorManager.whiteColor,
+                                  fontSize: 16,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text:
+                                        "${widget.userAddress?.city.toString() ?? ''}",
+                                  ),
+                                  widget.userAddress?.state == null
+                                      ? TextSpan()
+                                      : TextSpan(
+                                          text:
+                                              ",${widget.userAddress?.state ?? ''}",
+                                          style: getRegularStyle(
+                                            fontSize: 16,
+                                            color: ColorManager.whiteColor,
+                                          ),
+                                        ),
+                                  TextSpan(
+                                    text:
+                                        ",${widget.userAddress?.country.toString() ?? ''}",
+                                    style: getRegularStyle(
+                                      fontSize: 16,
+                                      color: ColorManager.whiteColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
+                          )
                         ],
                       )),
                 ],

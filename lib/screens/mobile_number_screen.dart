@@ -18,7 +18,6 @@ import 'package:social_media_services/model/get_countries.dart';
 import 'package:social_media_services/providers/data_provider.dart';
 import 'package:social_media_services/providers/otp_provider.dart';
 import 'package:social_media_services/widgets/backbutton.dart';
-import 'package:social_media_services/widgets/terms_and_condition.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:social_media_services/widgets/top_logo.dart';
@@ -261,7 +260,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
                   SizedBox(
                     height: size.height < 600 ? h * .13 : h * .23,
                   ),
-                  const TermsAndCondition()
+                  // const TermsAndCondition()
                 ],
               ),
               isPickerSelected

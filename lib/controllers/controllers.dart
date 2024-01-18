@@ -8,6 +8,7 @@ class EditProfileControllers {
   static TextEditingController regionController = TextEditingController();
   static TextEditingController stateController = TextEditingController();
   static TextEditingController aboutController = TextEditingController();
+  static TextEditingController genderController = TextEditingController();
 }
 
 class PhoneNumberControllers {
@@ -44,6 +45,7 @@ class ServiceControllers {
   static TextEditingController stateController = TextEditingController();
   static TextEditingController regionController = TextEditingController();
   static TextEditingController mapController = TextEditingController();
+  static TextEditingController servicenameController = TextEditingController();
   //  static TextEditingController stateController = TextEditingController();
 }
 
@@ -64,6 +66,7 @@ class GoogleMapControllers {
 
 class ServiceManProfileEdit {
   static TextEditingController stateController = TextEditingController();
+  static TextEditingController regionController = TextEditingController();
   static TextEditingController searchController = TextEditingController();
   static TextEditingController descriptionController = TextEditingController();
   static TextEditingController detailsController = TextEditingController();

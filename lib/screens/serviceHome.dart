@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_services/API/endpoint.dart';
 import 'package:social_media_services/API/home/get_subService.dart';
@@ -15,6 +16,7 @@ import 'package:social_media_services/providers/servicer_provider.dart';
 import 'package:social_media_services/responsive/responsive.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:social_media_services/utils/back_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ServiceHomePage extends StatefulWidget {
   const ServiceHomePage({Key? key}) : super(key: key);
@@ -203,11 +205,42 @@ class _ServiceHomePageState extends State<ServiceHomePage> {
                                     child: Container(
                                       width: w * .92,
                                       color: ColorManager.whiteColor,
-                                      child: CachedNetworkImage(
-                                        imageUrl:
-                                            "$endPoint${provider.homeModel?.homebanner?[index].image}",
-                                        width: w,
-                                        fit: BoxFit.fitWidth,
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          String targetUrl = provider.homeModel
+                                                  ?.homebanner?[index].target ??
+                                              '';
+
+                                          if (!targetUrl
+                                                  .startsWith('http://') &&
+                                              !targetUrl
+                                                  .startsWith('https://')) {
+                                            // If not, assume it's an HTTP URL
+                                            targetUrl = 'http://$targetUrl';
+                                          }
+// launch target url
+                                          if (targetUrl.isNotEmpty) {
+                                            await launchUrl(
+                                              (Uri.parse(targetUrl)),
+                                              mode: LaunchMode
+                                                  .externalApplication,
+                                            );
+                                            // if (await canLaunchUrl(
+                                            //     Uri.parse(targetUrl))) {
+                                            //   await launchUrl(
+                                            //       (Uri.parse(targetUrl)));
+                                            // } else {
+                                            //   print(
+                                            //       'Could not launch $targetUrl');
+                                            // }
+                                          }
+                                        },
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              "$endPoint${provider.homeModel?.homebanner?[index].image}",
+                                          width: w,
+                                          fit: BoxFit.fitWidth,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -274,9 +307,11 @@ class _ServiceHomePageState extends State<ServiceHomePage> {
                             itemBuilder: (BuildContext ctx, index) {
                               return InkWell(
                                 onTap: () {
+                                  Hive.box('service').put('service',
+                                      homeData![index].service.toString());
                                   Navigator.push(context,
                                       FadePageRoute(page: LoadingListPage()));
-                                  final id = homeData![index].id;
+                                  final id = homeData[index].id;
                                   servicerProvider.serviceId = id;
                                   getSubService(
                                       context, id, false, homeData[index]);

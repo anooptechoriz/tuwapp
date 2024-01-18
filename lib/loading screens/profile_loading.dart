@@ -31,7 +31,9 @@ class _ServiceManDetailsState extends State<ProfileLoading> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await getServiceManDetailsFun(
-          context, widget.serviceId ?? widget.serviceman?.id.toString());
+          context,
+          widget.serviceId ?? widget.serviceman?.data
+            ?..toString());
       Navigator.pushReplacement(
         context,
         PageTransition(

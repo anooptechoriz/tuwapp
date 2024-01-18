@@ -35,7 +35,9 @@ class Userdetails {
   String? phone;
   int? countryId;
   String? state;
+  String? statename;
   String? region;
+  String? city;
   String? profilePic;
   String? deviceId;
   String? apiToken;
@@ -68,7 +70,9 @@ class Userdetails {
       this.phone,
       this.countryId,
       this.state,
+      this.statename,
       this.region,
+      this.city,
       this.profilePic,
       this.deviceId,
       this.apiToken,
@@ -100,7 +104,9 @@ class Userdetails {
     // emailVerifiedAt = json['email_verified_at'];
     phone = json['phone'];
     countryId = json['country_id'];
+    city = json['city_name'];
     state = json['state'];
+    statename = json['state_name'];
     region = json['region'];
     profilePic = json['profile_pic'];
     deviceId = json['device_id'];
@@ -135,7 +141,9 @@ class Userdetails {
     // data['email_verified_at'] = emailVerifiedAt;
     data['phone'] = phone;
     data['country_id'] = countryId;
+    data['city_name'] = city;
     data['state'] = state;
+    data['state_name'] = statename;
     data['region'] = region;
     data['profile_pic'] = profilePic;
     data['device_id'] = deviceId;

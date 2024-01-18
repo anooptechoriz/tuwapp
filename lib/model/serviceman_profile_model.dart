@@ -45,6 +45,8 @@ class UserData {
   int? countryId;
   String? state;
   String? region;
+  String? statename;
+  String? city;
   String? profilePic;
   String? deviceId;
   String? apiToken;
@@ -84,6 +86,8 @@ class UserData {
       this.countryId,
       this.state,
       this.region,
+      this.statename,
+      this.city,
       this.profilePic,
       this.deviceId,
       this.apiToken,
@@ -123,6 +127,8 @@ class UserData {
     countryId = json['country_id'];
     state = json['state'];
     region = json['region'];
+    city = json['city_name'];
+    statename = json['state_name'];
     profilePic = json['profile_pic'];
     deviceId = json['device_id'];
     apiToken = json['api_token'];
@@ -164,6 +170,8 @@ class UserData {
     data['country_id'] = countryId;
     data['state'] = state;
     data['region'] = region;
+    data['city_name'] = city;
+    data['state_name'] = statename;
     data['profile_pic'] = profilePic;
     data['device_id'] = deviceId;
     data['api_token'] = apiToken;

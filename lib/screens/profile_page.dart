@@ -46,7 +46,20 @@ class _ProfilePageState extends State<ProfilePage> {
       isHome: true,
     )
   ];
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String lang = '';
+  Future<bool> handleBackButton() async {
+    if (_scaffoldKey.currentState!.isEndDrawerOpen) {
+      // If the drawer is open, close it
+      _scaffoldKey.currentState!.closeEndDrawer();
+      return false; // Do not exit the app
+    } else {
+      // If the drawer is not open, exit the app
+      Navigator.pop(context);
+      return true;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -79,289 +92,296 @@ class _ProfilePageState extends State<ProfilePage> {
     final smobWth = ResponsiveWidth.issMobile(context);
     final firstName = toBeginningOfSentenceCase(
         provider.viewProfileModel?.userdetails?.firstname);
-    return Scaffold(
-      drawerEnableOpenDragGesture: false,
-      endDrawer: SizedBox(
-        height: size.height * 0.825,
-        width: mobWth
-            ? size.width * 0.6
-            : smobWth
-                ? w * .7
-                : w * .75,
-        child: const CustomDrawer(),
-      ),
-      // * Custom bottom Nav
-      bottomNavigationBar: Stack(
-        children: [
-          Container(
-            height: 45,
-            decoration: BoxDecoration(boxShadow: [
-              BoxShadow(
-                blurRadius: 5.0,
-                color: Colors.grey.shade400,
-                offset: const Offset(6, 1),
-              ),
-            ]),
-          ),
-          SizedBox(
-            height: 44,
-            child: GNav(
-              tabMargin: const EdgeInsets.symmetric(
-                vertical: 0,
-              ),
-              gap: 0,
-              backgroundColor: ColorManager.whiteColor,
-              mainAxisAlignment: MainAxisAlignment.center,
-              activeColor: ColorManager.grayDark,
-              iconSize: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-              duration: const Duration(milliseconds: 400),
-              tabBackgroundColor: ColorManager.primary.withOpacity(0.4),
-              color: ColorManager.black,
-              tabs: [
-                GButton(
-                  icon: FontAwesomeIcons.message,
-                  leading: InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                          context,
-                          PageTransition(
-                            type: PageTransitionType.fade,
-                            child: const HomePage(
-                              selectedIndex: 0,
-                            ),
-                          ));
-                    },
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: SvgPicture.asset(ImageAssets.homeIconSvg),
-                    ),
-                  ),
-                ),
-                GButton(
-                  icon: FontAwesomeIcons.message,
-                  leading: InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      Navigator.push(
-                          context,
-                          PageTransition(
-                            type: PageTransitionType.fade,
-                            child: const HomePage(
-                              selectedIndex: 1,
-                            ),
-                          ));
-                    },
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: SvgPicture.asset(ImageAssets.chatIconSvg),
-                    ),
-                  ),
-                ),
-              ],
-              haptic: true,
-              selectedIndex: _selectedIndex,
-              // onTabChange: (index) {
-              //   Navigator.pushNamedAndRemoveUntil(
-              //       context, Routes.homePage, (route) => false);
-              //   // setState(() {
-              //   //   _selectedIndex = index;
-              //   // });
-              // },
-            ),
-          ),
-          Positioned(
-              left: lang == 'ar' ? 5 : null,
-              right: lang != 'ar' ? 5 : null,
-              bottom: 0,
-              child: Builder(
-                builder: (context) => InkWell(
-                  onTap: () {
-                    Scaffold.of(context).openEndDrawer();
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Icon(
-                      Icons.menu,
-                      size: 25,
-                      color: ColorManager.black,
-                    ),
-                  ),
-                ),
-              ))
-        ],
-      ),
-      body: WillPopScope(
-        onWillPop: () async {
-          return _willPopCallback();
-        },
-        child: SafeArea(
-            child: Stack(
+    return WillPopScope(
+      onWillPop: handleBackButton,
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawerEnableOpenDragGesture: false,
+        endDrawer: SizedBox(
+          height: size.height * 0.825,
+          width: mobWth
+              ? size.width * 0.6
+              : smobWth
+                  ? w * .7
+                  : w * .75,
+          child: const CustomDrawer(),
+        ),
+        // * Custom bottom Nav
+        bottomNavigationBar: Stack(
           children: [
-            Row(
-              children: [
-                BackButton2(),
-                Spacer(),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TopLogo(),
-                )
-              ],
+            Container(
+              height: 45,
+              decoration: BoxDecoration(boxShadow: [
+                BoxShadow(
+                  blurRadius: 5.0,
+                  color: Colors.grey.shade400,
+                  offset: const Offset(6, 1),
+                ),
+              ]),
             ),
-            Column(
-              children: [
-                SizedBox(
-                    height: size.height * 0.36,
-                    child: FadeCustomAnimation(
-                      delay: .1,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Center(
-                          //     child: ProfileImage(
-                          //   isNavigationActive: false,
-                          //   iconSize: 18,
-                          //   profileSize: 60,
-                          //   iconRadius: 17,
-                          // )),
-                          Center(
-                              child: ProfileImage3(
-                            isNavigationActive: false,
-                            iconSize: 18,
-                            profileSize: 60,
-                            iconRadius: 17,
-                          )),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 15, 0, 5),
-                            child: Text(
-                                '${firstName ?? ''} ${provider.viewProfileModel?.userdetails?.lastname ?? ''}',
-                                style: getBoldtStyle(
-                                    color: ColorManager.black, fontSize: 20)),
-                          ),
-                          Text(
-                              provider.viewProfileModel?.userdetails?.phone ??
-                                  '',
-                              style: getRegularStyle(
-                                  color: const Color(0xff6e6e6e),
-                                  fontSize: 14)),
-                        ],
+            SizedBox(
+              height: 44,
+              child: GNav(
+                tabMargin: const EdgeInsets.symmetric(
+                  vertical: 0,
+                ),
+                gap: 0,
+                backgroundColor: ColorManager.whiteColor,
+                mainAxisAlignment: MainAxisAlignment.center,
+                activeColor: ColorManager.grayDark,
+                iconSize: 24,
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                duration: const Duration(milliseconds: 400),
+                tabBackgroundColor: ColorManager.primary.withOpacity(0.4),
+                color: ColorManager.black,
+                tabs: [
+                  GButton(
+                    icon: FontAwesomeIcons.message,
+                    leading: InkWell(
+                      onTap: () {
+                        // Navigator.pop(context);
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                              type: PageTransitionType.fade,
+                              child: const HomePage(
+                                selectedIndex: 0,
+                              ),
+                            ));
+                      },
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: SvgPicture.asset(ImageAssets.homeIconSvg),
                       ),
-                    )),
-                InkWell(
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-                      return EditProfileScreen(
-                        isregister: false,
-                      );
-                    }));
-                  },
-                  child: FadeSlideCustomAnimation(
-                    delay: .1,
-                    child: ProfileTitleWidget(
-                      name: str.pp_my_profile,
-                      icon: Icons.person_outline,
                     ),
                   ),
-                ),
-                InkWell(
-                  onTap: () {
-                    // Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-                      return const MessagePage(
-                        isOther: true,
-                        isHome: false,
-                      );
-                    }));
-                  },
-                  child: FadeSlideCustomAnimation(
-                    delay: .2,
-                    child: ProfileTitleWidget(
-                      name: str.pp_message,
-                      icon: FontAwesomeIcons.message,
+                  GButton(
+                    icon: FontAwesomeIcons.message,
+                    leading: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                              type: PageTransitionType.fade,
+                              child: const HomePage(
+                                selectedIndex: 1,
+                              ),
+                            ));
+                      },
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: SvgPicture.asset(ImageAssets.chatIconSvg),
+                      ),
                     ),
                   ),
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, Routes.wishList);
-                  },
-                  child: FadeSlideCustomAnimation(
-                    delay: .3,
-                    child: ProfileTitleWidget(
-                      name: str.pp_favourites,
-                      icon: Icons.favorite_border,
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, Routes.addressPage);
-                  },
-                  child: FadeSlideCustomAnimation(
-                    delay: .4,
-                    child: ProfileTitleWidget(
-                      name: str.pp_address,
-                      icon: Icons.pin_drop_outlined,
-                    ),
-                  ),
-                ),
-                provider.viewProfileModel?.userdetails?.userType == 'serviceman'
-                    ? Container()
-                    : InkWell(
-                        onTap: () {
-                          navigateToServiceManProfile();
-                        },
-                        child: FadeSlideCustomAnimation(
-                          delay: .5,
-                          child: ProfileTitleWidget(
-                            name: str.pp_settings1,
-                            icon: Icons.settings_outlined,
-                          ),
-                        ),
-                      ),
-                provider.viewProfileModel?.userdetails?.userType == 'serviceman'
-                    ? Container()
-                    : InkWell(
-                        onTap: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (ctx) {
-                            return const MyServicesPage();
-                          }));
-                        },
-                        child: FadeSlideCustomAnimation(
-                          delay: .5,
-                          child: ProfileTitleWidget(
-                            name: str.pp_my_Services,
-                            icon: Icons.pin_drop_outlined,
-                            svg: 'assets/Myservice.svg',
-                          ),
-                        ),
-                      ),
-                provider.viewProfileModel?.userdetails?.userType == 'serviceman'
-                    ? Container()
-                    : InkWell(
-                        onTap: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (ctx) {
-                            return const MySubscriptionPage();
-                          }));
-                        },
-                        child: FadeSlideCustomAnimation(
-                          delay: .5,
-                          child: ProfileTitleWidget(
-                            name: str.pp_my_sub,
-                            icon: FontAwesomeIcons.bell,
-                          ),
-                        ),
-                      ),
-              ],
+                ],
+                haptic: true,
+                selectedIndex: _selectedIndex,
+                // onTabChange: (index) {
+                //   Navigator.pushNamedAndRemoveUntil(
+                //       context, Routes.homePage, (route) => false);
+                //   // setState(() {
+                //   //   _selectedIndex = index;
+                //   // });
+                // },
+              ),
             ),
+            Positioned(
+                left: lang == 'ar' ? 5 : null,
+                right: lang != 'ar' ? 5 : null,
+                bottom: 0,
+                child: Builder(
+                  builder: (context) => InkWell(
+                    onTap: () {
+                      Scaffold.of(context).openEndDrawer();
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Icon(
+                        Icons.menu,
+                        size: 25,
+                        color: ColorManager.black,
+                      ),
+                    ),
+                  ),
+                ))
           ],
-        )),
+        ),
+        body: WillPopScope(
+          onWillPop: () async {
+            return _willPopCallback();
+          },
+          child: SafeArea(
+              child: Stack(
+            children: [
+              Row(
+                children: [
+                  BackButton2(),
+                  Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TopLogo(),
+                  )
+                ],
+              ),
+              Column(
+                children: [
+                  SizedBox(
+                      height: size.height * 0.36,
+                      child: FadeCustomAnimation(
+                        delay: .1,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Center(
+                            //     child: ProfileImage(
+                            //   isNavigationActive: false,
+                            //   iconSize: 18,
+                            //   profileSize: 60,
+                            //   iconRadius: 17,
+                            // )),
+                            Center(
+                                child: ProfileImage3(
+                              isNavigationActive: false,
+                              iconSize: 18,
+                              profileSize: 60,
+                              iconRadius: 17,
+                            )),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 15, 0, 5),
+                              child: Text(
+                                  '${firstName ?? ''} ${provider.viewProfileModel?.userdetails?.lastname ?? ''}',
+                                  style: getBoldtStyle(
+                                      color: ColorManager.black, fontSize: 20)),
+                            ),
+                            Text(
+                                provider.viewProfileModel?.userdetails?.phone ??
+                                    '',
+                                style: getRegularStyle(
+                                    color: const Color(0xff6e6e6e),
+                                    fontSize: 14)),
+                          ],
+                        ),
+                      )),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+                        return EditProfileScreen(
+                          isregister: false,
+                        );
+                      }));
+                    },
+                    child: FadeSlideCustomAnimation(
+                      delay: .1,
+                      child: ProfileTitleWidget(
+                        name: str.pp_my_profile,
+                        icon: Icons.person_outline,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      // Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+                        return const MessagePage(
+                          isOther: true,
+                          isHome: false,
+                        );
+                      }));
+                    },
+                    child: FadeSlideCustomAnimation(
+                      delay: .2,
+                      child: ProfileTitleWidget(
+                        name: str.pp_message,
+                        icon: FontAwesomeIcons.message,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, Routes.wishList);
+                    },
+                    child: FadeSlideCustomAnimation(
+                      delay: .3,
+                      child: ProfileTitleWidget(
+                        name: str.pp_favourites,
+                        icon: Icons.favorite_border,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, Routes.addressPage);
+                    },
+                    child: FadeSlideCustomAnimation(
+                      delay: .4,
+                      child: ProfileTitleWidget(
+                        name: str.pp_address,
+                        icon: Icons.pin_drop_outlined,
+                      ),
+                    ),
+                  ),
+                  provider.viewProfileModel?.userdetails?.userType ==
+                          'serviceman'
+                      ? Container()
+                      : InkWell(
+                          onTap: () {
+                            navigateToServiceManProfile();
+                          },
+                          child: FadeSlideCustomAnimation(
+                            delay: .5,
+                            child: ProfileTitleWidget(
+                              name: str.pp_settings1,
+                              icon: Icons.settings_outlined,
+                            ),
+                          ),
+                        ),
+                  provider.viewProfileModel?.userdetails?.userType ==
+                          'serviceman'
+                      ? Container()
+                      : InkWell(
+                          onTap: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (ctx) {
+                              return const MyServicesPage();
+                            }));
+                          },
+                          child: FadeSlideCustomAnimation(
+                            delay: .5,
+                            child: ProfileTitleWidget(
+                              name: str.pp_my_Services,
+                              icon: Icons.pin_drop_outlined,
+                              svg: 'assets/Myservice.svg',
+                            ),
+                          ),
+                        ),
+                  provider.viewProfileModel?.userdetails?.userType ==
+                          'serviceman'
+                      ? Container()
+                      : InkWell(
+                          onTap: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (ctx) {
+                              return const MySubscriptionPage();
+                            }));
+                          },
+                          child: FadeSlideCustomAnimation(
+                            delay: .5,
+                            child: ProfileTitleWidget(
+                              name: str.pp_my_sub,
+                              icon: FontAwesomeIcons.bell,
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            ],
+          )),
+        ),
       ),
     );
   }

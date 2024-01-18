@@ -19,6 +19,7 @@ import 'package:social_media_services/API/get_otp.dart';
 import 'package:social_media_services/animations/animtions.dart';
 import 'package:social_media_services/components/color_manager.dart';
 import 'package:social_media_services/components/styles_manager.dart';
+import 'package:social_media_services/constants/constant.dart';
 import 'package:social_media_services/controllers/controllers.dart';
 import 'package:social_media_services/model/otp/otp_verification.dart';
 import 'package:social_media_services/providers/data_provider.dart';
@@ -30,7 +31,6 @@ import 'package:social_media_services/utils/pinTheme.dart';
 import 'package:social_media_services/screens/edit_profile_screen.dart';
 import 'package:social_media_services/utils/snack_bar.dart';
 import 'package:social_media_services/API/viewProfile.dart';
-import 'package:social_media_services/widgets/terms_and_condition.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
@@ -53,6 +53,7 @@ class _OTPscreenState extends State<OTPscreen> {
     lang = Hive.box('LocalLan').get(
       'lang',
     );
+    print("FCMT : $fcmToken");
   }
 
   @override
@@ -200,7 +201,7 @@ class _OTPscreenState extends State<OTPscreen> {
             SizedBox(
               height: Responsive.isMobile(context) ? h * .24 : h * .04,
             ),
-            const TermsAndCondition()
+            // const TermsAndCondition()
           ],
         ),
       )),
@@ -244,7 +245,7 @@ class _OTPscreenState extends State<OTPscreen> {
     try {
       var response = await http.post(
           Uri.parse(
-              "$apiUser/otp_verification?countrycode=${otpProvider.countryCode}&phone=${otpProvider.phoneNo}&otp=${otpProvider.getOtp?.oTP.toString()}"),
+              "$apiUser/otp_verification?countrycode=${otpProvider.countryCode}&phone=${otpProvider.phoneNo}&otp=${otpProvider.getOtp?.oTP.toString()}&fcm=$fcmToken"),
           headers: {"device-id": provider.deviceId ?? ''});
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);

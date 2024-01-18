@@ -12,7 +12,6 @@ import 'package:social_media_services/API/endpoint.dart';
 import 'package:social_media_services/controllers/controllers.dart';
 import 'package:social_media_services/model/sub_services_model.dart';
 import 'package:social_media_services/providers/data_provider.dart';
-import 'package:social_media_services/utils/snack_bar.dart';
 
 reportCustomerFun(BuildContext context) async {
   final provider = Provider.of<DataProvider>(context, listen: false);

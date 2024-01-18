@@ -9,7 +9,7 @@
     "m_sub1":"We will send you an OTP for verify your mobile number.",
     "m_continue":"Continue",
     "m_snack":"Please Enter a valid Mobile Number",
-    "m_10digits":"Mobile Number must not be above 10 digits",
+    "m_10digits":"Mobile number must not be above 10 digits",
 
     "t_1":"By continuing, you agree to ",
     "t_2":"Terms & Conditions",
@@ -69,6 +69,7 @@
     "c_service_group":"Service Group",
     "c_service_group_h":"Enter Group",
     "c_service_list":"Service List",
+    "c_service_list_h1":"Enter List",
      "c_service_list_h":"Service List",
     "c_vehicle":"Vehicle Registration Card/ CR Copy",
     "c_browse":"Browse",
@@ -240,6 +241,7 @@
     "snack_message_sent":"The Message can't be sent at the Moment",
 
     "gm_new_location":"Confirm New Location",
+    "gm_choose_location":"Choose Location",
     "gm_search":"Search Google Maps",
     "gm_search_servicer":"Search Servicer on this Location",
 

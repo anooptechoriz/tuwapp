@@ -55,7 +55,7 @@
     "p_dob_h":"जन्म् की तारीख़ दर्ज करे",
     "p_gender":"लिंग",
     "p_male":"पुरुष",
-    "p_female":"मादा",
+    "p_female":"महिला",
     "p_country":"देश",
     "p_country_h":"क्षेत्र दर्ज करें",
     "p_region":"क्षेत्र",
@@ -71,6 +71,7 @@
     "c_service_group":"सेवा समूह",
     "c_service_group_h":"समूह दर्ज करें",
     "c_service_list":"सेवा सूची",
+    "c_service_list_h1":"सूची दर्ज करें",
     "c_service_list_h":"सेवा सूची",
     "c_vehicle":"वाहन पंजीकरण कार्ड/सीआर कॉपी",
     "c_browse":"ब्राउज़",
@@ -125,6 +126,7 @@
     "pp_settings":"भाषा सेटिंग्स",
     "pp_my_Services":"मेरी सेवाएं",
     "pp_my_sub":"मेरी सदस्यता",
+    "pp_no_sub":"कोई सदस्यता उपलब्ध नहीं है",
 
     "w_wishList":"इच्छा-सूची",
 
@@ -137,6 +139,7 @@
     "su_time":"समय",
     "su_service_fee":"सेवा शुल्क",
     "su_discount":"छूट",
+    "su_offerprice":"रखी गयी क़ीमत",
     "su_vat":"VAT",
     "su_mobile":"मोबाइल नंबर",
     "su_exp":"समाप्ति की तिथि",
@@ -236,13 +239,17 @@
     "snack_get_location":"वर्तमान स्थान प्राप्त कर रहा है...",
     "snack_done":"पूर्ण",
     "snack_choose_group":"कृपया एक सेवा समूह चुनें",
-    "snack_upload":"कृपया एक फ़ाइल अपलोड करें",
+    "snack_upload":"कृपया एक उप सेवा चुनें",
+    "snack_upload_file":"कृपया एक फ़ाइल अपलोड करें",
     "snack_no_address":"कोई पता उपलब्ध नहीं है",
     "snack_phone_digits":"मोबाइल नंबर 8 अंकों से कम का नहीं होना चाहिए",
     "snack_enable_loc":"आगे की पहुंच के लिए स्थान सक्षम करें",
     "snack_message_sent":"इस समय संदेश नहीं भेजा जा सकता",
+    "snack_customer_report":"ग्राहक ने सफलतापूर्वक रिपोर्ट किया",
+    "snack_package":"इस सेवा के अंतर्गत कोई सदस्यता पैकेज उपलब्ध नहीं है। कृपया कोई अन्य सेवा चुनें",
 
     "gm_new_location":"नए स्थान की पुष्टि करें",
+    "gm_choose_location":"स्थान का चयन",
     "gm_search":"Google मानचित्र खोजें",
     "gm_search_servicer":"इस स्थान पर सेवाकर्ता खोजें",
 
@@ -253,6 +260,7 @@
     "di_delete":"पता फ़ील्ड हटाएं!",
     "di_delete2":"क्या आप निस्चय ही यह कार्य करना चाहते हैं",
     "di_delete3":"मिटाना",
+    "di_deleteimg":"छवि हटाएँ!",
     "di_dont":"मैं नहीं चाहता",
     "di_allow":"अनुमति देना",
 
@@ -305,11 +313,12 @@
   "proceed": "आगे बढ़ें",
   "explore": "अन्वेषण करें",
   "choose": "चुनें",
+  "yesterday":"कल",
 
   "back": "वापस",
   "hello": "नमस्ते",
 
-  "open_google_map": "Google मैप खोलें",
+  "open_google_map": "गूगल मैप खोलें",
 
 
   "delete_account":"खाता हटा दो",

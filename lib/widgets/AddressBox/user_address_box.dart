@@ -30,6 +30,12 @@ class _UserAddressBoxState extends State<UserAddressBox> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    String capitalizeFirstLetter(String text) {
+      if (text.isEmpty) {
+        return text;
+      }
+      return text[0].toUpperCase() + text.substring(1);
+    }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
@@ -79,7 +85,8 @@ class _UserAddressBoxState extends State<UserAddressBox> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.userAddress?.addressName ?? "",
+                        capitalizeFirstLetter(
+                            widget.userAddress?.addressName ?? ""),
                         style: getRegularStyle(
                           color: ColorManager.whiteColor,
                           fontSize: 18,
@@ -103,13 +110,43 @@ class _UserAddressBoxState extends State<UserAddressBox> {
                                 fontSize: 16,
                               ),
                             ),
-                      Text(
-                        "${widget.userAddress?.region}, ${widget.userAddress?.state ?? ''}, ${widget.userAddress?.country}",
-                        style: getRegularStyle(
-                          color: ColorManager.whiteColor,
-                          fontSize: 16,
+                      Container(
+                        width: size.width / 1.12,
+                        child: RichText(
+                          maxLines: 2, // Set the maximum number of lines
+                          overflow: TextOverflow.ellipsis,
+                          text: TextSpan(
+                            style: getRegularStyle(
+                              color: ColorManager.whiteColor,
+                              fontSize: 16,
+                            ),
+                            children: [
+                              TextSpan(
+                                text:
+                                    "${widget.userAddress?.city.toString() ?? ''}",
+                              ),
+                              widget.userAddress?.state == null
+                                  ? TextSpan()
+                                  : TextSpan(
+                                      text:
+                                          ",${widget.userAddress?.state ?? ''}",
+                                      style: getRegularStyle(
+                                        fontSize: 16,
+                                        color: ColorManager.whiteColor,
+                                      ),
+                                    ),
+                              TextSpan(
+                                text:
+                                    ",${widget.userAddress?.country.toString() ?? ''}",
+                                style: getRegularStyle(
+                                  fontSize: 16,
+                                  color: ColorManager.whiteColor,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                      )
                     ],
                   ),
                   // child: Row(

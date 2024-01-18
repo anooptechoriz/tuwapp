@@ -27,7 +27,7 @@
     "e_dob_h":"जन्म् की तारीख़ दर्ज करे",
     "e_gender":"लिंग",
     "e_male":"पुरुष",
-    "e_female":"मादा",
+    "e_female":"महिला",
     "e_country":"देश",
     "e_country_h":"देश दर्ज करें",
     "e_region":"क्षेत्र",
@@ -70,6 +70,7 @@
     "c_service_group_h":"समूह दर्ज करें",
     "c_service_list":"सेवा सूची",
     "c_service_list_h":"सेवा सूची",
+    "c_service_list_h1":"सूची में दर्ज करें"
     "c_vehicle":"वाहन पंजीकरण कार्ड/सीआर कॉपी",
     "c_browse":"ब्राउज़",
     "c_pay":"भुगतान करना जारी रखें",  
@@ -239,6 +240,7 @@
     "snack_message_sent":"इस समय संदेश नहीं भेजा जा सकता",
 
     "gm_new_location":"नए स्थान की पुष्टि करें",
+    "gm_choose_location":"स्थान का चयन",
     "gm_search":"Google मानचित्र खोजें",
     "gm_search_servicer":"इस स्थान पर सेवाकर्ता खोजें",
 

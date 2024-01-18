@@ -19,7 +19,7 @@ getServiceManProfileFun(BuildContext context) async {
     final url =
         '$serviceManProfileApi?user_id=${provider.viewProfileModel?.userdetails?.id}&language_id=$lanId';
     print(url);
-    print("hiiiiii");
+    print("hiiiiii888888");
     var response = await http.post(Uri.parse(url),
         headers: {"device-id": provider.deviceId ?? '', "api-token": apiToken});
     if (response.statusCode == 200) {

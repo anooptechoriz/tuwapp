@@ -17,10 +17,11 @@ getChatList(BuildContext context) async {
   final provider = Provider.of<DataProvider>(context, listen: false);
   // provider.subServicesModel = null;
   final apiToken = Hive.box("token").get('api_token');
+  final String lanId = Hive.box("LocalLan").get('lang_id');
   // if (apiToken == null) return;
   try {
     var response = await http.post(
-        Uri.parse('$api/chat-list?page=1&language_id=1'),
+        Uri.parse('$api/chat-list?page=1&language_id=$lanId'),
         headers: {"device-id": provider.deviceId ?? '', "api-token": apiToken});
     var jsonResponse = jsonDecode(response.body);
     if (response.statusCode == 200) {
